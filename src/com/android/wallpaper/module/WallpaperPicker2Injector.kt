@@ -202,17 +202,19 @@ open class WallpaperPicker2Injector : Injector {
         viewFullScreen: Boolean,
         testingModeEnabled: Boolean
     ): Fragment {
-        val args = Bundle()
-        args.putParcelable(PreviewFragment.ARG_WALLPAPER, wallpaperInfo)
-        args.putInt(PreviewFragment.ARG_PREVIEW_MODE, mode)
-        args.putBoolean(PreviewFragment.ARG_VIEW_AS_HOME, viewAsHome)
-        args.putBoolean(PreviewFragment.ARG_FULL_SCREEN, viewFullScreen)
-        args.putBoolean(PreviewFragment.ARG_TESTING_MODE_ENABLED, testingModeEnabled)
         val fragment =
             if (wallpaperInfo is LiveWallpaperInfo) LivePreviewFragment()
             else ImagePreviewFragment()
-        fragment.arguments = args
-        return fragment
+        return fragment.apply {
+            arguments =
+                Bundle().apply {
+                    putParcelable(PreviewFragment.ARG_WALLPAPER, wallpaperInfo)
+                    putInt(PreviewFragment.ARG_PREVIEW_MODE, mode)
+                    putBoolean(PreviewFragment.ARG_VIEW_AS_HOME, viewAsHome)
+                    putBoolean(PreviewFragment.ARG_FULL_SCREEN, viewFullScreen)
+                    putBoolean(PreviewFragment.ARG_TESTING_MODE_ENABLED, testingModeEnabled)
+                }
+        }
     }
 
     @Synchronized
