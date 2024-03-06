@@ -19,7 +19,6 @@ package com.android.wallpaper.picker.customization.ui.binder
 
 import android.app.Activity
 import android.app.WallpaperColors
-import android.app.WallpaperManager
 import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.content.res.Configuration
@@ -46,13 +45,16 @@ import com.android.systemui.monet.ColorScheme
 import com.android.wallpaper.R
 import com.android.wallpaper.asset.Asset
 import com.android.wallpaper.asset.BitmapCachingAsset
-import com.android.wallpaper.asset.CurrentWallpaperAssetVN
+import com.android.wallpaper.asset.CurrentWallpaperAsset
 import com.android.wallpaper.config.BaseFlags
 import com.android.wallpaper.model.LiveWallpaperInfo
 import com.android.wallpaper.model.WallpaperInfo
 import com.android.wallpaper.module.CustomizationSections
+import com.android.wallpaper.picker.FixedWidthDisplayRatioFrameLayout
 import com.android.wallpaper.picker.WorkspaceSurfaceHolderCallback
 import com.android.wallpaper.picker.customization.animation.view.LoadingAnimation
+import com.android.wallpaper.picker.customization.ui.section.ScreenPreviewClickView
+import com.android.wallpaper.picker.customization.ui.view.WallpaperSurfaceView
 import com.android.wallpaper.picker.customization.ui.viewmodel.AnimationStateViewModel
 import com.android.wallpaper.picker.customization.ui.viewmodel.ScreenPreviewViewModel
 import com.android.wallpaper.util.ResourceUtils
@@ -60,6 +62,7 @@ import com.android.wallpaper.util.WallpaperConnection
 import com.android.wallpaper.util.WallpaperSurfaceCallback
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.atomic.AtomicBoolean
+import kotlinx.coroutines.DisposableHandle
 import kotlinx.coroutines.launch
 
 /**
@@ -95,35 +98,39 @@ object ScreenPreviewBinder {
         offsetToStart: Boolean,
         dimWallpaper: Boolean = false,
         onWallpaperPreviewDirty: () -> Unit,
-        onWorkspacePreviewDirty: () -> Unit = {},
         animationStateViewModel: AnimationStateViewModel? = null,
         isWallpaperAlwaysVisible: Boolean = true,
         mirrorSurface: SurfaceView? = null,
     ): Binding {
         val workspaceSurface: SurfaceView = previewView.requireViewById(R.id.workspace_surface)
-        val wallpaperSurface: SurfaceView = previewView.requireViewById(R.id.wallpaper_surface)
+        val wallpaperSurface: WallpaperSurfaceView =
+            previewView.requireViewById(R.id.wallpaper_surface)
         val thumbnailRequested = AtomicBoolean(false)
         // Tracks whether the live preview should be shown, since a) visibility updates may arrive
         // before the engine is ready, and b) we need this state for onResume
         // TODO(b/287618705) Remove this
         val showLivePreview = AtomicBoolean(isWallpaperAlwaysVisible)
-        val fixedWidthDisplayFrameLayout = previewView.parent as? View
-        val screenPreviewClickView = fixedWidthDisplayFrameLayout?.parent as? View
-        // Set the content description on the parent view
-        screenPreviewClickView?.contentDescription =
-            activity.resources.getString(viewModel.previewContentDescription)
-        fixedWidthDisplayFrameLayout?.importantForAccessibility =
-            View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS
+        val fixedWidthDisplayFrameLayout = previewView.parent as? FixedWidthDisplayRatioFrameLayout
+        val screenPreviewClickView = fixedWidthDisplayFrameLayout?.parent as? ScreenPreviewClickView
+        if (screenPreviewClickView != null) {
+            // If screenPreviewClickView exists, we will have it handle accessibility and
+            // disable a11y for the descendants.
+            // Set the content description on the parent view
+            screenPreviewClickView.contentDescription =
+                activity.resources.getString(viewModel.previewContentDescription)
+            fixedWidthDisplayFrameLayout.importantForAccessibility =
+                View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS
+            // This ensures that we do not announce the time multiple times
+            previewView.importantForAccessibility =
+                View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS
+        }
 
-        // This ensures that we do not announce the time multiple times
-        previewView.importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS
         var wallpaperIsReadyForReveal = false
         val surfaceViewsReady = {
             wallpaperSurface.setBackgroundColor(Color.TRANSPARENT)
             workspaceSurface.visibility = View.VISIBLE
         }
         wallpaperSurface.setZOrderOnTop(false)
-        val wallpaperManager = WallpaperManager.getInstance(activity)
 
         val flags = BaseFlags.get()
         val isPageTransitionsFeatureEnabled = flags.isPageTransitionsFeatureEnabled(activity)
@@ -141,7 +148,7 @@ object ScreenPreviewBinder {
         previewView.radius =
             previewView.resources.getDimension(R.dimen.wallpaper_picker_entry_card_corner_radius)
 
-        previewView.setOnClickListener { viewModel.onPreviewClicked?.invoke() }
+        previewView.isClickable = true
 
         var previewSurfaceCallback: WorkspaceSurfaceHolderCallback? = null
         var wallpaperSurfaceCallback: WallpaperSurfaceCallback? = null
@@ -153,6 +160,21 @@ object ScreenPreviewBinder {
         var animationTransitionProgress: Float? = null
         var animationColorToRestore: Int? = null
         var currentWallpaperThumbnail: Bitmap? = null
+
+        var disposableHandle: DisposableHandle? = null
+
+        val cleanupWallpaperConnectionRunnable = Runnable {
+            disposableHandle?.dispose()
+            wallpaperConnection?.destroy()
+            wallpaperConnection = null
+        }
+
+        fun cleanupWallpaperConnection() {
+            // If existing, remove any scheduled cleanups...
+            previewView.removeCallbacks(cleanupWallpaperConnectionRunnable)
+            // ...and cleanup immediately
+            cleanupWallpaperConnectionRunnable.run()
+        }
 
         val job =
             lifecycleOwner.lifecycleScope.launch {
@@ -197,8 +219,7 @@ object ScreenPreviewBinder {
                             override fun onDestroy(owner: LifecycleOwner) {
                                 super.onDestroy(owner)
                                 if (isPageTransitionsFeatureEnabled) {
-                                    wallpaperConnection?.destroy()
-                                    wallpaperConnection = null
+                                    cleanupWallpaperConnection()
                                 }
                             }
 
@@ -236,9 +257,12 @@ object ScreenPreviewBinder {
                                     } else null
                                 )
                                 wallpaperIsReadyForReveal = false
-                                if (!isPageTransitionsFeatureEnabled) {
-                                    wallpaperConnection?.destroy()
-                                    wallpaperConnection = null
+                                if (isPageTransitionsFeatureEnabled) {
+                                    // delay cleanup to prevent flicker between onStop and page
+                                    // transition animation start
+                                    previewView.postDelayed(cleanupWallpaperConnectionRunnable, 100)
+                                } else {
+                                    cleanupWallpaperConnectionRunnable.run()
                                 }
                             }
 
@@ -315,6 +339,13 @@ object ScreenPreviewBinder {
                             wallpaperSurface.setZOrderMediaOverlay(true)
                         }
 
+                        if (!isWallpaperAlwaysVisible) {
+                            wallpaperSurface.visibilityCallback = { visible: Boolean ->
+                                showLivePreview.set(visible)
+                                wallpaperConnection?.setVisibility(showLivePreview.get())
+                            }
+                        }
+
                         lifecycleOwner.lifecycle.addObserver(lifecycleObserver)
                     }
 
@@ -353,13 +384,17 @@ object ScreenPreviewBinder {
 
                 launch {
                     lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                        var initialWorkspaceUpdate = true
                         viewModel.workspaceUpdateEvents()?.collect {
-                            if (initialWorkspaceUpdate) {
-                                initialWorkspaceUpdate = false
-                            } else {
-                                onWorkspacePreviewDirty()
-                            }
+                            workspaceSurface.holder.removeCallback(previewSurfaceCallback)
+                            previewSurfaceCallback?.cleanUp()
+                            removeAndReadd(workspaceSurface)
+                            previewSurfaceCallback =
+                                WorkspaceSurfaceHolderCallback(
+                                    workspaceSurface,
+                                    viewModel.previewUtils,
+                                    viewModel.getInitialExtras(),
+                                )
+                            workspaceSurface.holder.addCallback(previewSurfaceCallback)
                         }
                     }
                 }
@@ -441,8 +476,7 @@ object ScreenPreviewBinder {
                             }
                             (wallpaperInfo as? LiveWallpaperInfo)?.let { liveWallpaperInfo ->
                                 if (isPageTransitionsFeatureEnabled) {
-                                    wallpaperConnection?.destroy()
-                                    wallpaperConnection = null
+                                    cleanupWallpaperConnection()
                                 }
                                 val connection =
                                     wallpaperConnection
@@ -465,22 +499,26 @@ object ScreenPreviewBinder {
                                     // Sometimes the service gets connected before the view
                                     // is valid.
                                     // TODO(b/284233455): investigate why and remove this workaround
-                                    previewView.addOnAttachStateChangeListener(
+                                    val listener =
                                         object : OnAttachStateChangeListener {
-                                            override fun onViewAttachedToWindow(v: View?) {
+                                            override fun onViewAttachedToWindow(v: View) {
                                                 connection.connect()
-                                                connection.setVisibility(true)
+                                                connection.setVisibility(showLivePreview.get())
                                                 previewView.removeOnAttachStateChangeListener(this)
                                             }
 
-                                            override fun onViewDetachedFromWindow(v: View?) {
+                                            override fun onViewDetachedFromWindow(v: View) {
                                                 // Do nothing
                                             }
                                         }
-                                    )
+
+                                    previewView.addOnAttachStateChangeListener(listener)
+                                    disposableHandle = DisposableHandle {
+                                        previewView.removeOnAttachStateChangeListener(listener)
+                                    }
                                 } else {
                                     connection.connect()
-                                    connection.setVisibility(true)
+                                    connection.setVisibility(showLivePreview.get())
                                 }
                             }
                         }
@@ -536,7 +574,7 @@ object ScreenPreviewBinder {
             wallpaperSurface,
             mirrorSurface,
             screen.toFlag(),
-            WallpaperConnection.WHICH_PREVIEW.PREVIEW_CURRENT
+            WallpaperConnection.WhichPreview.PREVIEW_CURRENT
         )
 
     private fun removeAndReadd(view: View) {
@@ -573,7 +611,7 @@ object ScreenPreviewBinder {
                     activity,
                     imageView,
                     ResourceUtils.getColorAttr(activity, android.R.attr.colorSecondary),
-                    /* offsetToStart= */ thumbAsset !is CurrentWallpaperAssetVN || offsetToStart
+                    /* offsetToStart= */ thumbAsset !is CurrentWallpaperAsset || offsetToStart
                 )
             if (wallpaperInfo !is LiveWallpaperInfo) {
                 imageView.addOnLayoutChangeListener(

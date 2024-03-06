@@ -39,6 +39,7 @@ android_library {
         "androidx.navigation_navigation-ui-ktx",
         "androidx.navigation_navigation-fragment-ktx",
         "com.google.android.material_material",
+        "com_android_wallpaper_flags_lib",
         "glide-prebuilt",
         "glide-gifdecoder-prebuilt",
         "glide-disklrucache-prebuilt",
@@ -59,7 +60,7 @@ android_library {
         enabled: false,
     },
 
-    kotlincflags: ["-Xjvm-default=enable"],
+    kotlincflags: ["-Xjvm-default=all"],
 
     sdk_version: "current",
 
@@ -89,6 +90,13 @@ filegroup {
         "src_override/**/*.java",
         "src_override/**/*.kt",
     ],
+}
+
+// Production-only files that should be excluded in tests.
+filegroup {
+    name: "WallpaperPicker2_src_prod",
+    visibility: [":__subpackages__"],
+    srcs: ["src_override/com/android/wallpaper/picker/WallpapersApplication.java"],
 }
 
 genrule {
@@ -131,7 +139,7 @@ java_defaults {
         enabled: false,
     },
 
-    kotlincflags: ["-Xjvm-default=enable"],
+    kotlincflags: ["-Xjvm-default=all"],
     privileged: true,
     system_ext_specific: true,
 
@@ -140,30 +148,11 @@ java_defaults {
 
 java_defaults {
     name: "WallpaperPicker2_defaults",
-
-    static_libs: [
-        "wallpaper-common-deps",
-        "monet",
-        "hilt_android",
-    ],
+    defaults: ["WallpaperPicker2_common_defaults"],
 
     srcs: [
-        ":WallpaperPicker2_srcs",
         ":WallpaperPicker2_src_overrides",
     ],
-    resource_zips: [":WallpaperPicker2_res"],
-
-    certificate: "",
-
-    optimize: {
-        enabled: false,
-    },
-
-    kotlincflags: ["-Xjvm-default=enable"],
-    privileged: true,
-    system_ext_specific: true,
-
-    use_embedded_native_libs: true,
 }
 
 //
