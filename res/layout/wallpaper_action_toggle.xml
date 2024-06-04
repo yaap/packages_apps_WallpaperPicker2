@@ -31,10 +31,15 @@
         android:textAlignment="viewStart"
         android:textColor="?android:textColorSecondary" />
 
-    <Switch
+    <com.google.android.material.materialswitch.MaterialSwitch
         android:id="@+id/wallpaper_action_switch"
         android:background="@null"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        style="@style/Switch.SettingsLib"/>
+        android:clickable="false"
+        android:focusable="false"
+        android:theme="@style/Theme.Material3.DynamicColors.DayNight"
+        android:text=""
+        android:textOn=""
+        android:textOff="" />
 </LinearLayout>

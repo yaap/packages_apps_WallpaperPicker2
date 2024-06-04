@@ -19,11 +19,11 @@ import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Switch
 import android.widget.TextView
 import com.android.internal.widget.RecyclerView
 import com.android.wallpaper.R
 import com.android.wallpaper.model.WallpaperAction
+import com.google.android.material.materialswitch.MaterialSwitch
 
 /**
  * This class adapts the [WallpaperActionToggle] model to the WallpaperActionSelectionBottomSheet's
@@ -37,7 +37,7 @@ class WallpaperActionsToggleAdapter(
 
     class ViewHolder(v: View) : RecyclerView.ViewHolder(v) {
         val textView: TextView
-        val switchView: Switch
+        val switchView: MaterialSwitch
         init {
             textView = v.requireViewById(R.id.wallpaper_action_switch_label)
             switchView = v.requireViewById(R.id.wallpaper_action_switch)
