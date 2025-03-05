@@ -80,7 +80,6 @@ android_library {
         ":__subpackages__",
         "//packages/apps/ThemePicker:__subpackages__",
         "//vendor:__subpackages__",
-        "//packages/apps/YAAPThemePicker"
     ],
 }
 
