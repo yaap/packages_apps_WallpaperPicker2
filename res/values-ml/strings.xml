@@ -56,6 +56,8 @@
     <string name="start_rotation_progress_message" msgid="7872623873682262083">"ആദ്യ വാൾപേപ്പർ ഡൗൺലോഡ് ചെയ്യുന്നു…"</string>
     <string name="start_rotation_error_message" msgid="3053799836719618972">"ആദ്യ വാൾപേപ്പർ ഡൗൺലോഡ് ചെയ്യാനാവുന്നില്ല. നിങ്ങളുടെ നെറ്റ്‌വർക്ക് ക്രമീകരണം പരിശോധിച്ച് വീണ്ടും ശ്രമിക്കുക."</string>
     <string name="start_rotation_dialog_body" msgid="7903554799046364916">"ദിവസവും സ്വയമേവ വാൾപേപ്പർ മാറും"</string>
+    <string name="collapse_content_description" msgid="47845329734521980">"ചുരുക്കുക"</string>
+    <string name="expand_content_description" msgid="2422558308356416382">"വികസിപ്പിക്കുക"</string>
     <string name="settings_button_label" msgid="8724734130079207955">"ക്രമീകരണം"</string>
     <string name="explore" msgid="7468719504199497281">"അടുത്തറിയൂ"</string>
     <string name="next_wallpaper" msgid="3911873152952596232">"അടുത്ത വാൾപേപ്പർ"</string>
@@ -118,6 +120,7 @@
     <string name="home_wallpaper_preview_card_content_description" msgid="4059418716070821630">"ഹോം സ്‌ക്രീൻ വാൾപേപ്പർ പ്രിവ്യൂ"</string>
     <string name="collection_not_exist_msg" msgid="3504852962885064842">"ശേഖരം നിലവിലില്ല"</string>
     <string name="wallpaper_exit_split_screen" msgid="1928870664619591636">"സ്പ്ലിറ്റ് സ്ക്രീൻ മോഡിൽ നിന്ന് പുറത്ത് കടന്ന് വീണ്ടും ശ്രമിക്കുക"</string>
+    <string name="wallpaper_preview_error" msgid="8230796042388952229">"വാൾപേപ്പർ പ്രിവ്യൂ കാണിക്കാനാകുന്നില്ല"</string>
     <string name="set_wallpaper_dialog_set_button" msgid="5760149969510325088">"സജ്ജീകരിക്കുക"</string>
     <string name="cancel" msgid="4970902691067201584">"റദ്ദാക്കുക"</string>
     <string name="hide_ui_preview_text" msgid="6766076482511252295">"UI പ്രിവ്യൂ മറയ്‌ക്കുക"</string>
@@ -146,7 +149,7 @@
     <string name="reset_confirmation_dialog_title" msgid="3391905685838213712">"മാറ്റങ്ങൾ റീസെറ്റ് ചെയ്യണോ?"</string>
     <string name="reset_confirmation_dialog_message" msgid="888669268626289603">"നിങ്ങളുടെ മാറ്റങ്ങൾ സംരക്ഷിക്കില്ല"</string>
     <string name="more_wallpapers" msgid="8116268433411881705">"കൂടുതൽ വാൾപേപ്പറുകൾ"</string>
-    <string name="view_all_wallpapers" msgid="1555854274767599522">"&gt;\nഎല്ലാം കാണുക"</string>
+    <string name="view_all_wallpapers" msgid="4480657694212439906">"എല്ലാം കാണുക"</string>
     <string name="wallpapers" msgid="7133442512006469886">"വാൾപേപ്പറുകൾ"</string>
     <string name="recents_wallpaper_label" msgid="8653165542635660222">"%1$s, %2$d"</string>
     <string name="default_wallpaper_title" msgid="2541071182656978180">"വാൾപേപ്പർ"</string>

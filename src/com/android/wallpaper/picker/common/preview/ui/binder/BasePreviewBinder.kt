@@ -50,12 +50,15 @@ import kotlinx.coroutines.launch
 // reading from viewModel.isViewAsHome.
 object BasePreviewBinder {
 
+    // Layer number for SurfaceView#compositionOrder, negative numbers are under the media window
+    const val MEDIA_OVERLAY_SURFACE_LAYER = -1
+
     fun bind(
         applicationContext: Context,
         view: View,
         viewModel: CustomizationPickerViewModel2,
         colorUpdateViewModel: ColorUpdateViewModel,
-        workspaceCallbackBinder: WorkspaceCallbackBinder,
+        workspaceBinder: WorkspaceBinder,
         screen: Screen,
         deviceDisplayType: DeviceDisplayType,
         displaySize: Point,
@@ -148,11 +151,11 @@ object BasePreviewBinder {
             onPreviewSurfaceDestroyed = onPreviewSurfaceDestroyed,
         )
 
-        WorkspacePreviewBinder.bind(
+        workspaceBinder.bind(
             surfaceView = workspaceSurface,
+            alternativeWorkspaceView = view.requireViewById(R.id.alternative_workspace_view),
             viewModel = viewModel,
             colorUpdateViewModel = colorUpdateViewModel,
-            workspaceCallbackBinder = workspaceCallbackBinder,
             screen = screen,
             deviceDisplayType = deviceDisplayType,
             lifecycleOwner = lifecycleOwner,

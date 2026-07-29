@@ -28,6 +28,15 @@ interface CategoryInteractor {
 
     val isNetworkCategoriesNotEmpty: Flow<Boolean>
 
+    val defaultRecentCategories: Flow<List<CategoryModel>>
+
+    /**
+     * This function is called when the picker actually starts to fetch categories not prefetched on
+     * device boot. e.g. categories that contains heavy resources that may affect boot time
+     * performance.
+     */
+    fun fetchDelayedCategories()
+
     fun refreshDueToLocaleChange()
 
     fun refreshNetworkCategories()

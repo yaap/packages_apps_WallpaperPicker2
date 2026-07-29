@@ -28,4 +28,11 @@ data class CategoryWallpapersContentViewModel(
     val rotationEnabled: Boolean,
     val title: String,
     val wallpaperItems: List<CategoryWallpapersItemViewModel>,
+    // temporary flag to gate UI changes
+    val isNewUIEnabled: Boolean = false,
+    val dismissScreen: (suspend () -> Unit),
+    val onRotationStart: (() -> Unit)? = null,
+    val onShowRotationDialog: (() -> Unit)? = null,
+    val onCancelRotationDialog: (() -> Unit)? = null,
+    val onNetworkPreferences: ((Boolean) -> Unit)? = null,
 )

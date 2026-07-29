@@ -21,17 +21,15 @@ import android.graphics.drawable.AnimatedImageDrawable
 import android.graphics.drawable.Drawable
 import android.util.TypedValue
 import android.widget.ImageView
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -39,6 +37,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.integerResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -74,27 +74,34 @@ fun WallpaperCarouselDesktop(
                 minItems,
                 maxItems,
             )
+        val useSpecialItemWidths =
+            useSpecialItemWidths(
+                containerWidth,
+                itemSpacing,
+                itemWidthThreshold,
+                itemsCount,
+                minItems,
+            )
 
-        LazyRow(
-            modifier = modifier.fillMaxWidth(),
+        Row(
+            modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(itemSpacing),
         ) {
-            itemsIndexed(items.take(itemsCount)) { index, item ->
-                val itemWidth =
-                    calculateCarouselItemWidth(
-                        index,
-                        containerWidth,
-                        itemSpacing,
-                        itemsCount,
-                        itemWidthThreshold,
-                        minItems,
-                        maxItems,
-                    )
+            items.take(itemsCount).forEachIndexed { index, item ->
+                val itemWeight =
+                    if (useSpecialItemWidths) {
+                        // If `useSpecialItemWidths` is true, the first item takes double horizontal
+                        // space than others.
+                        if (index == 0) 2f else 1f
+                    } else {
+                        1f
+                    }
+
                 WallpaperItem(
                     item = item,
                     curatedPhotosTimeUtil = curatedPhotosTimeUtil,
                     userEventLogger = userEventLogger,
-                    modifier = Modifier.width(itemWidth),
+                    modifier = Modifier.weight(itemWeight),
                     onClick = { item.onClicked?.invoke() },
                 )
             }
@@ -113,35 +120,36 @@ fun WallpaperItem(
     val context = LocalContext.current
     val cornerRadius = remember { getDialogCornerRadius(context) }
 
-    Card(
+    Box(
         modifier =
             modifier
                 .height(dimensionResource(id = R.dimen.curated_photo_desktop_height))
-                .clip(RoundedCornerShape(cornerRadius)),
-        shape = RoundedCornerShape(cornerRadius),
-        onClick = onClick,
-        elevation = CardDefaults.cardElevation(0.dp),
+                .clickable(onClick = onClick)
+                .semantics { contentDescription = item.contentDescription ?: "" }
     ) {
         AndroidView(
             factory = {
                 ImageView(it).apply {
                     scaleType = ImageView.ScaleType.CENTER_CROP
-                    contentDescription = item.contentDescription
+                    importantForAccessibility = android.view.View.IMPORTANT_FOR_ACCESSIBILITY_NO
                 }
             },
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(cornerRadius)),
             update = { imageView ->
                 item.thumbnailAsset?.let { asset ->
                     asset.loadDrawableWithTransition(
-                        context,
-                        imageView,
-                        context.resources.getInteger(android.R.integer.config_mediumAnimTime),
-                        {
+                        /* context= */ context,
+                        /* imageView= */ imageView,
+                        /* transitionDurationMillis= */ context.resources.getInteger(
+                            android.R.integer.config_mediumAnimTime
+                        ),
+                        /* drawableLoadedListener= */ {
                             val startTime = curatedPhotosTimeUtil.getStartTime()
                             val timeMilliseconds = System.currentTimeMillis() - startTime
                             userEventLogger.logCuratedPhotosRendered(timeMilliseconds, true)
                         },
-                        context.getColor(R.color.system_surface_bright),
+                        /* placeholderColor= */ context.getColor(R.color.system_surface_bright),
+                        /* permissionErrorListener= */ null,
                     )
                 }
                     ?: run {
@@ -200,29 +208,21 @@ private fun calculateNumberOfItems(
     }
 }
 
-private fun calculateCarouselItemWidth(
-    index: Int,
+/**
+ * Determines whether to use special item widths. This is true when the number of items to be
+ * displayed is the minimum, but the container width is not sufficient to display all items with the
+ * `itemWidthThreshold`. When this is true, the first item will be given more horizontal space than
+ * the others.
+ */
+private fun useSpecialItemWidths(
     containerWidth: Dp,
     itemSpacing: Dp,
-    itemsCount: Int,
     itemWidthThreshold: Dp,
+    itemsCount: Int,
     minItems: Int,
-    maxItems: Int,
-): Dp {
-    val totalSpacing = itemSpacing * (itemsCount - 1)
-    val remainingContainerWidth = containerWidth - totalSpacing
-    return if (itemsCount == maxItems || itemWidthThreshold * minItems <= remainingContainerWidth) {
-        remainingContainerWidth / itemsCount
-    } else {
-        // Show `minItems` on the carousel but the first item have the width value double than
-        // others.
-        val unitWidth = remainingContainerWidth / (minItems + 1)
-        return if (index == 0) {
-            unitWidth * 2
-        } else {
-            unitWidth
-        }
-    }
+): Boolean {
+    return itemsCount == minItems &&
+        (itemWidthThreshold * minItems + itemSpacing * (minItems - 1)) > containerWidth
 }
 
 private fun getDialogCornerRadius(context: Context): Dp {

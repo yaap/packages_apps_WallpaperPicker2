@@ -51,12 +51,12 @@ flag {
 }
 
 flag {
-    name: "desktop_ui_flag"
-    namespace: "desktop_personalization"
-    description: "Mouse, keyboard, large screen improvements for customization picker"
-    bug: "415883086"
+    name: "fullscreen_preview_flow_fix"
+    namespace: "customization_picker"
+    description: "Changes the flow of wallpaper preview fullscreen"
+    bug: "442337477"
     metadata {
-        purpose: PURPOSE_FEATURE
+        purpose: PURPOSE_BUGFIX
     }
 }
 
@@ -82,4 +82,67 @@ flag {
     namespace: "customization_picker"
     description: "Refactor the wallpaper preview screen into Compose."
     bug: "423956081"
+}
+
+flag {
+    name: "refactor_wallpaper_info_flag"
+    namespace: "customization_picker"
+    description: "Flag for enabling the photo shuffle feature in the wallpaper picker app"
+    bug: "448461866"
+}
+
+flag {
+    name: "collapsable_reordered_ai_wallpapers_screen"
+    namespace: "customization_picker"
+    description: "Flag for enabling the new AI wallpapers layout with collapsable sections and reordered templates"
+    bug: "457835470"
+}
+
+flag {
+    name: "enable_recent_wallpaper_deletion"
+    namespace: "customization_picker"
+    description: "Enables deletion of recent wallpaper entries for creative wallpapers when their assets are deleted"
+    bug: "464098463"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "enable_recents_deletion_via_provider"
+    namespace: "customization_picker"
+    description: "Enables deletion of recent wallpaper entries via the content provider"
+    bug: "465589212"
+}
+
+flag {
+    name: "enable_android_photopicker"
+    namespace: "customization_picker"
+    description: "Enables the Android Photopicker"
+    bug: "475397703"
+}
+
+flag {
+    name: "enable_ai_clocks"
+    namespace: "customization_picker"
+    description: "Enables AI clocks functionality"
+    bug: "479587332"
+    metadata {
+            purpose: PURPOSE_FEATURE
+    }
+}
+
+
+flag {
+    name: "enable_effect_for_cat_smile"
+    namespace: "customization_picker"
+    description: "Enables effect for the cat smile project"
+    bug: "479401365"
+}
+
+flag {
+    name: "proactive_suggestions"
+    namespace: "customization_picker"
+    description: "Suggested actions for selected wallpapers"
+    bug: "450082207"
 }

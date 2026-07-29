@@ -47,13 +47,13 @@ import com.android.wallpaper.picker.customization.ui.viewmodel.WallpaperCarousel
 import com.android.wallpaper.picker.customization.ui.viewmodel.WallpaperCarouselViewModel.NavigationEvent.NavigateToPreviewScreen
 import com.android.wallpaper.picker.customization.ui.viewmodel.WallpaperCarouselViewModel.NavigationEvent.NavigateToWallpaperCollection
 import com.android.wallpaper.picker.data.WallpaperModel
+import com.android.wallpaper.picker.data.category.CategoryModel
 import com.android.wallpaper.util.CuratedPhotosTimeUtil
 import com.google.android.material.carousel.CarouselLayoutManager
 import com.google.android.material.carousel.CarouselSnapHelper
 import kotlinx.coroutines.launch
 
 object WallpaperPickerEntryBinder {
-    private const val DESKTOP_CAROUSEL_ITEMS_COUNT = 5
 
     private class CustomScrollableCarouselLayoutManager : CarouselLayoutManager() {
         private var isScrollable = false
@@ -80,7 +80,7 @@ object WallpaperPickerEntryBinder {
         navigateToPreviewScreen:
             ((wallpaperModel: WallpaperModel, setWallpaperEntryPoint: Int) -> Unit)?,
         navigateToWallpaperCollectionScreen:
-            ((collectionId: String, categoryType: CategoryType) -> Unit)?,
+            ((categoryModel: CategoryModel, categoryType: CategoryType) -> Unit)?,
         navigateToExtendedWallpaperEffects: (() -> Unit)?,
         curatedPhotosTimeUtil: CuratedPhotosTimeUtil,
         userEventLogger: UserEventLogger,
@@ -99,7 +99,7 @@ object WallpaperPickerEntryBinder {
             navigateToExtendedWallpaperEffects = navigateToExtendedWallpaperEffects,
         )
 
-        val shouldShowDesktopUi = BaseFlags.get().shouldShowDesktopUi(view.context)
+        val shouldShowDesktopUi = BaseFlags.get(view.context).shouldShowDesktopUi(view.context)
 
         if (shouldShowDesktopUi) {
             bindWallpaperCarouselDesktop(
@@ -206,7 +206,7 @@ object WallpaperPickerEntryBinder {
         navigateToPreviewScreen:
             ((wallpaperModel: WallpaperModel, setWallpaperEntryPoint: Int) -> Unit)?,
         navigateToWallpaperCollectionScreen:
-            ((collectionId: String, categoryType: CategoryType) -> Unit)?,
+            ((categoryModel: CategoryModel, categoryType: CategoryType) -> Unit)?,
         navigateToExtendedWallpaperEffects: (() -> Unit)?,
     ) {
         lifecycleOwner.lifecycleScope.launch {
@@ -217,7 +217,7 @@ object WallpaperPickerEntryBinder {
                     when (navigationEvent) {
                         is NavigateToWallpaperCollection -> {
                             navigateToWallpaperCollectionScreen?.invoke(
-                                navigationEvent.categoryId,
+                                navigationEvent.categoryModel,
                                 navigationEvent.categoryType,
                             )
                         }
@@ -263,24 +263,33 @@ object WallpaperPickerEntryBinder {
                     setupWallpaperCarouselRecyclerView(wallpaperCarousel)
 
                     viewModel.wallpaperCarouselItems.collect {
-                        wallpaperPickerEntryView.post {
-                            if (it.isEmpty()) {
-                                wallpaperPickerEntryView.animateToCollapsed()
+                        if (it.isNotEmpty()) {
+                            wallpaperPickerEntryView.setExpandable(expandable = true)
+                            wallpaperCarousel.swapAdapter(
+                                CuratedPhotosAdapter(
+                                    items = it,
+                                    curatedPhotosTimeUtil = curatedPhotosTimeUtil,
+                                    userEventLogger = userEventLogger,
+                                    onInvalidPhoto = { viewModel.refreshCuratedPhotos() },
+                                ),
+                                /** removeAndRecycleExistingViews= */
+                                false,
+                            )
+
+                            // Enable scrolling for the carousel only for mobile/tablet mode.
+                            if (it.isNotEmpty() && it[0].showTitle) {
+                                wallpaperCarousel.addOnScrollListener(
+                                    WallpaperTitleScrollListener()
+                                )
+                            }
+                            (wallpaperCarousel.layoutManager
+                                    as? CustomScrollableCarouselLayoutManager)
+                                ?.setIsScrollable(true)
+                        } else {
+                            wallpaperPickerEntryView.post {
+                                wallpaperPickerEntryView.setExpandable(expandable = false)
                             }
                         }
-
-                        wallpaperCarousel.swapAdapter(
-                            CuratedPhotosAdapter(it, curatedPhotosTimeUtil, userEventLogger),
-                            /** removeAndRecycleExistingViews= */
-                            false,
-                        )
-
-                        // Enable scrolling for the carousel only for mobile/tablet mode.
-                        if (!it.isEmpty() && it.get(0).showTitle) {
-                            wallpaperCarousel.addOnScrollListener(WallpaperTitleScrollListener())
-                        }
-                        (wallpaperCarousel.layoutManager as? CustomScrollableCarouselLayoutManager)
-                            ?.setIsScrollable(true)
                     }
                 }
             }
@@ -301,17 +310,19 @@ object WallpaperPickerEntryBinder {
             lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 launch {
                     viewModel.wallpaperCarouselItems.collect { items ->
-                        wallpaperPickerEntryView.post {
-                            if (items.isEmpty()) {
-                                wallpaperPickerEntryView.animateToCollapsed()
+                        if (items.isNotEmpty()) {
+                            wallpaperPickerEntryView.setExpandable(expandable = true)
+                            wallpaperCarouselDesktop.setContent {
+                                WallpaperCarouselDesktop(
+                                    items = items,
+                                    curatedPhotosTimeUtil = curatedPhotosTimeUtil,
+                                    userEventLogger = userEventLogger,
+                                )
                             }
-                        }
-                        wallpaperCarouselDesktop.setContent {
-                            WallpaperCarouselDesktop(
-                                items = items,
-                                curatedPhotosTimeUtil = curatedPhotosTimeUtil,
-                                userEventLogger = userEventLogger,
-                            )
+                        } else {
+                            wallpaperPickerEntryView.post {
+                                wallpaperPickerEntryView.setExpandable(expandable = false)
+                            }
                         }
                     }
                 }

@@ -24,4 +24,39 @@
     <drawable name="wallpaper1">@drawable/wallpaper</drawable>
     <drawable name="wallpaper1_small">@drawable/wallpaper_thumb</drawable>
 
+    <!-- Sample category data used in LegacyWallpaperClientImplTests -->
+    <!-- Array of static category names -->
+    <string-array name="static_categories">
+        <item>test_static_category</item>
+    </string-array>
+
+    <!-- Title for the category -->
+    <string name="test_static_category_title">Test Static Category</string>
+
+    <!-- Featured image resource name -->
+    <string name="test_static_category_featured_image">wallpaper_1</string>
+
+    <!-- The actual list of wallpapers in this category -->
+    <string-array name="test_static_category_wallpapers">
+        <item>wallpaper_1</item>
+        <item>wallpaper_2</item>
+    </string-array>
+
+    <!-- Sample category data used in PixelWallpaperClientImplTest -->
+    <!-- The main list of categories -->
+    <string-array name="pixel_live_categories">
+        <item>test_category_pixel</item>
+    </string-array>
+
+    <!-- Attributes for 'test_category_pixel' -->
+    <string name="test_category_pixel_title">Pixel Live Category</string>
+    <integer name="test_category_pixel_priority">100</integer>
+    <!-- This must match the package name where we 'install' the service in ShadowPackageManager -->
+    <string name="test_category_pixel_package_name">com.google.pixel.livewallpaper</string>
+    <string name="test_category_pixel_featured_service_name">com.google.pixel.livewallpaper.split.FeatureActivity</string>
+
+    <string-array name="test_category_pixel_service_names">
+        <item>com.google.pixel.livewallpaper.split.FeatureActivity</item>
+    </string-array>
+
 </resources>

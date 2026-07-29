@@ -56,6 +56,8 @@
     <string name="start_rotation_progress_message" msgid="7872623873682262083">"पहला वॉलपेपर डाउनलोड हो रहा है…"</string>
     <string name="start_rotation_error_message" msgid="3053799836719618972">"पहला वॉलपेपर डाउनलोड नहीं हो पा रहा है. कृपया अपनी नेटवर्क सेटिंग जाँचें और फिर से कोशिश करें."</string>
     <string name="start_rotation_dialog_body" msgid="7903554799046364916">"वॉलपेपर रोज़ अपने आप बदल जाएगा"</string>
+    <string name="collapse_content_description" msgid="47845329734521980">"छोटा करें"</string>
+    <string name="expand_content_description" msgid="2422558308356416382">"बड़ा करें"</string>
     <string name="settings_button_label" msgid="8724734130079207955">"सेटिंग"</string>
     <string name="explore" msgid="7468719504199497281">"ज़्यादा जानें"</string>
     <string name="next_wallpaper" msgid="3911873152952596232">"अगला वॉलपेपर"</string>
@@ -118,6 +120,7 @@
     <string name="home_wallpaper_preview_card_content_description" msgid="4059418716070821630">"होम स्क्रीन पर दिखने वाले वॉलपेपर की झलक"</string>
     <string name="collection_not_exist_msg" msgid="3504852962885064842">"वॉलपेपर का संग्रह मौजूद नहीं है"</string>
     <string name="wallpaper_exit_split_screen" msgid="1928870664619591636">"स्प्लिट स्क्रीन मोड बंद करके, दोबारा कोशिश करें"</string>
+    <string name="wallpaper_preview_error" msgid="8230796042388952229">"वॉलपेपर की झलक नहीं दिखाई जा सकी"</string>
     <string name="set_wallpaper_dialog_set_button" msgid="5760149969510325088">"सेट करें"</string>
     <string name="cancel" msgid="4970902691067201584">"रद्द करें"</string>
     <string name="hide_ui_preview_text" msgid="6766076482511252295">"यूज़र इंटरफ़ेस की झलक छिपाएं"</string>
@@ -146,7 +149,7 @@
     <string name="reset_confirmation_dialog_title" msgid="3391905685838213712">"क्या आपको बदलाव रीसेट करने हैं?"</string>
     <string name="reset_confirmation_dialog_message" msgid="888669268626289603">"आपके बदलाव सेव नहीं किए जाएंगे"</string>
     <string name="more_wallpapers" msgid="8116268433411881705">"कुछ और वॉलपेपर"</string>
-    <string name="view_all_wallpapers" msgid="1555854274767599522">"&gt;\nसभी देखें"</string>
+    <string name="view_all_wallpapers" msgid="4480657694212439906">"सभी देखें"</string>
     <string name="wallpapers" msgid="7133442512006469886">"वॉलपेपर"</string>
     <string name="recents_wallpaper_label" msgid="8653165542635660222">"%1$s, %2$d"</string>
     <string name="default_wallpaper_title" msgid="2541071182656978180">"वॉलपेपर"</string>

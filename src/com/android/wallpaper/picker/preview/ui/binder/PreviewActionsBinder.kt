@@ -22,7 +22,6 @@ import android.view.View
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.constraintlayout.motion.widget.MotionLayout
-import androidx.core.view.isInvisible
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
@@ -31,6 +30,8 @@ import androidx.lifecycle.repeatOnLifecycle
 import com.android.wallpaper.R
 import com.android.wallpaper.config.BaseFlags
 import com.android.wallpaper.model.wallpaper.DeviceDisplayType
+import com.android.wallpaper.module.PackageStatusNotifier
+import com.android.wallpaper.module.WallpaperPreferences
 import com.android.wallpaper.module.logging.UserEventLogger
 import com.android.wallpaper.picker.preview.ui.util.ImageEffectDialogUtil
 import com.android.wallpaper.picker.preview.ui.view.ImageEffectDialog
@@ -45,6 +46,7 @@ import com.android.wallpaper.picker.preview.ui.viewmodel.Action.INFORMATION
 import com.android.wallpaper.picker.preview.ui.viewmodel.Action.SHARE
 import com.android.wallpaper.picker.preview.ui.viewmodel.PreviewActionsViewModel
 import com.android.wallpaper.picker.preview.ui.viewmodel.WallpaperPreviewViewModel
+import com.android.wallpaper.picker.wallpapers.data.repository.CategoryWallpapersRepository
 import com.android.wallpaper.util.ExtendedWallpaperEffectsUtils
 import com.android.wallpaper.widget.floatingsheetcontent.WallpaperActionsToggleAdapter
 import com.google.android.material.bottomsheet.BottomSheetBehavior
@@ -65,6 +67,9 @@ object PreviewActionsBinder {
         lifecycleOwner: LifecycleOwner,
         logger: UserEventLogger,
         imageEffectDialogUtil: ImageEffectDialogUtil,
+        packageStatusNotifier: PackageStatusNotifier,
+        categoryWallpapersRepository: CategoryWallpapersRepository,
+        wallpaperPreferences: WallpaperPreferences,
         onNavigateToEditScreen: (intent: Intent) -> Unit,
         onStartShareActivity: (intent: Intent) -> Unit,
     ) {
@@ -76,10 +81,11 @@ object PreviewActionsBinder {
 
         val extendedWallpaperEffectActivityLauncher =
             ExtendedWallpaperEffectsUtils.registerExtendedWallpaperEffectsActivityLauncher(
-                activity,
-                lifecycleOwner,
-                previewViewModel,
-                actionGroup.context.applicationContext,
+                activity = activity,
+                lifecycleOwner = lifecycleOwner,
+                wallpaperPreviewViewModel = previewViewModel,
+                context = actionGroup.context.applicationContext,
+                exitActivityOnCancel = previewViewModel.launchedForWallpaperEffects,
             )
 
         val floatingSheetCallback =
@@ -90,28 +96,21 @@ object PreviewActionsBinder {
                     // when the view is not gone.
                     if (newState == STATE_HIDDEN) {
                         actionsViewModel.onFloatingSheetCollapsed()
-                        if (BaseFlags.get().isNewPickerUi())
-                            smallPreview?.transitionToState(R.id.floating_sheet_gone)
-                        else floatingSheet.isInvisible = true
+                        smallPreview?.transitionToState(R.id.floating_sheet_gone)
                     } else {
-                        if (BaseFlags.get().isNewPickerUi())
-                            smallPreview?.transitionToState(R.id.floating_sheet_visible)
-                        else floatingSheet.isInvisible = false
+                        smallPreview?.transitionToState(R.id.floating_sheet_visible)
                     }
                 }
 
                 override fun onSlide(p0: View, p1: Float) {}
             }
         val noActionChecked = !actionsViewModel.isAnyActionChecked()
-        if (BaseFlags.get().isNewPickerUi()) {
-            if (noActionChecked) {
-                smallPreview?.transitionToState(R.id.floating_sheet_gone)
-            } else {
-                smallPreview?.transitionToState(R.id.floating_sheet_visible)
-            }
+        if (noActionChecked) {
+            smallPreview?.transitionToState(R.id.floating_sheet_gone)
         } else {
-            floatingSheet.isInvisible = noActionChecked
+            smallPreview?.transitionToState(R.id.floating_sheet_visible)
         }
+
         floatingSheet.addFloatingSheetCallback(floatingSheetCallback)
         lifecycleOwner.lifecycleScope.launch {
             lifecycleOwner.repeatOnLifecycle(Lifecycle.State.CREATED) {
@@ -150,6 +149,14 @@ object PreviewActionsBinder {
 
                 launch {
                     actionsViewModel.isDownloading.collect { actionGroup.setIsDownloading(it) }
+                }
+
+                launch {
+                    actionsViewModel.isDownloadComplete.collect {
+                        if (it) {
+                            refreshWallpapers(previewViewModel, categoryWallpapersRepository)
+                        }
+                    }
                 }
 
                 launch {
@@ -193,10 +200,51 @@ object PreviewActionsBinder {
                                         null,
                                         null,
                                     )
+                                    if (
+                                        BaseFlags.get(appContext).isEnableRecentWallpaperDeletion()
+                                    ) {
+                                        viewModel.description?.let { description ->
+                                            wallpaperPreferences.removeRecentWallpaper(description)
+                                        }
+                                    }
+                                    activity.finish()
+                                    refreshWallpapers(
+                                        previewViewModel,
+                                        categoryWallpapersRepository,
+                                    )
                                 } else if (viewModel.liveWallpaperDeleteIntent != null) {
+                                    var deletePackageListener: PackageStatusNotifier.Listener? =
+                                        null
+                                    deletePackageListener =
+                                        PackageStatusNotifier.Listener {
+                                            pkgName: String?,
+                                            status: Int ->
+                                            if (
+                                                status ==
+                                                    PackageStatusNotifier.PackageStatus.CHANGED &&
+                                                    pkgName == viewModel.wallpaperComponent
+                                            ) {
+                                                deletePackageListener?.let { listener ->
+                                                    packageStatusNotifier.removeListener(listener)
+                                                }
+                                                actionGroup.setIsDeleting(false)
+                                                refreshWallpapers(
+                                                    previewViewModel,
+                                                    categoryWallpapersRepository,
+                                                )
+                                                activity.finish()
+                                            }
+                                        }
+
+                                    deletePackageListener?.let { listener ->
+                                        packageStatusNotifier.addListener(
+                                            listener,
+                                            viewModel.liveWallpaperDeleteIntent.action,
+                                        )
+                                    }
+                                    actionGroup.setIsDeleting(true)
                                     appContext.startService(viewModel.liveWallpaperDeleteIntent)
                                 }
-                                activity.finish()
                             }
                             val dialog =
                                 deleteDialog
@@ -441,6 +489,18 @@ object PreviewActionsBinder {
                     }
                 }
             }
+        }
+    }
+
+    private fun refreshWallpapers(
+        previewViewModel: WallpaperPreviewViewModel,
+        categoryWallpapersRepository: CategoryWallpapersRepository,
+    ) {
+        val wallpaperModel = previewViewModel.wallpaper.value
+
+        wallpaperModel?.commonWallpaperData?.id?.collectionId?.let {
+            categoryWallpapersRepository.invalidateCache(it)
+            categoryWallpapersRepository.refreshWallpapers()
         }
     }
 }

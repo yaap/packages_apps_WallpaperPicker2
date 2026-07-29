@@ -31,7 +31,7 @@
     <string name="rotating_wallpaper_presentation_mode_message" msgid="3361676041605733288">"Täglicher Hintergrund"</string>
     <string name="wallpaper_destination_both" msgid="1124197176741944063">"Startbildschirm &amp; Sperrbildschirm"</string>
     <string name="choose_a_wallpaper_section_title" msgid="1009823506890453891">"Hintergrund auswählen"</string>
-    <string name="choose_a_curated_photo_section_title" msgid="7360675459203465887">"Vorgeschlagene Fotos"</string>
+    <string name="choose_a_curated_photo_section_title" msgid="7360675459203465887">"Foto-Vorschläge"</string>
     <string name="creative_wallpaper_title" msgid="3581650238648981372">"Hintergrund erstellen"</string>
     <string name="wallpaper_studio_title" msgid="4521517442580329214">"Hintergrund-Designer"</string>
     <string name="home_screen_message" msgid="106444102822522813">"Startbildschirm"</string>
@@ -56,6 +56,8 @@
     <string name="start_rotation_progress_message" msgid="7872623873682262083">"Erster Hintergrund wird heruntergeladen…"</string>
     <string name="start_rotation_error_message" msgid="3053799836719618972">"Erster Hintergrund kann nicht heruntergeladen werden. Prüfe deine Netzwerkeinstellungen und versuche es noch einmal."</string>
     <string name="start_rotation_dialog_body" msgid="7903554799046364916">"Hintergrund ändert sich automatisch jeden Tag"</string>
+    <string name="collapse_content_description" msgid="47845329734521980">"Minimieren"</string>
+    <string name="expand_content_description" msgid="2422558308356416382">"Maximieren"</string>
     <string name="settings_button_label" msgid="8724734130079207955">"Einstellungen"</string>
     <string name="explore" msgid="7468719504199497281">"Entdecken"</string>
     <string name="next_wallpaper" msgid="3911873152952596232">"Nächster Hintergrund"</string>
@@ -118,6 +120,7 @@
     <string name="home_wallpaper_preview_card_content_description" msgid="4059418716070821630">"Vorschau für Startbildschirmhintergrund"</string>
     <string name="collection_not_exist_msg" msgid="3504852962885064842">"Die Sammlung existiert nicht"</string>
     <string name="wallpaper_exit_split_screen" msgid="1928870664619591636">"Beende den Splitscreen-Modus und versuch es noch einmal"</string>
+    <string name="wallpaper_preview_error" msgid="8230796042388952229">"Hintergrundvorschau kann nicht angezeigt werden"</string>
     <string name="set_wallpaper_dialog_set_button" msgid="5760149969510325088">"Festlegen"</string>
     <string name="cancel" msgid="4970902691067201584">"Abbrechen"</string>
     <string name="hide_ui_preview_text" msgid="6766076482511252295">"UI-Vorschau ausblenden"</string>
@@ -146,7 +149,7 @@
     <string name="reset_confirmation_dialog_title" msgid="3391905685838213712">"Änderungen zurücksetzen?"</string>
     <string name="reset_confirmation_dialog_message" msgid="888669268626289603">"Änderungen werden nicht gespeichert."</string>
     <string name="more_wallpapers" msgid="8116268433411881705">"Weitere Hintergrundbilder"</string>
-    <string name="view_all_wallpapers" msgid="1555854274767599522">"&gt;\nAlle ansehen"</string>
+    <string name="view_all_wallpapers" msgid="4480657694212439906">"Alle ansehen"</string>
     <string name="wallpapers" msgid="7133442512006469886">"Hintergründe"</string>
     <string name="recents_wallpaper_label" msgid="8653165542635660222">"%1$s, %2$d"</string>
     <string name="default_wallpaper_title" msgid="2541071182656978180">"Hintergrund"</string>

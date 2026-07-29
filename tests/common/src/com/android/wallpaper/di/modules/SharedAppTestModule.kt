@@ -15,6 +15,7 @@
  */
 package com.android.wallpaper.di.modules
 
+import android.app.ThemeManager
 import android.app.WallpaperManager
 import android.content.ContentResolver
 import android.content.Context
@@ -25,6 +26,7 @@ import android.os.HandlerThread
 import android.os.Looper
 import android.os.Process
 import com.android.wallpaper.binder.FakeBannerProvider
+import com.android.wallpaper.config.BaseFlags
 import com.android.wallpaper.module.CreativeHelper
 import com.android.wallpaper.module.ExtendedEffectsHelper
 import com.android.wallpaper.module.LargeScreenMultiPanesChecker
@@ -32,6 +34,7 @@ import com.android.wallpaper.module.MultiPanesChecker
 import com.android.wallpaper.module.NetworkStatusNotifier
 import com.android.wallpaper.module.PackageStatusNotifier
 import com.android.wallpaper.module.WallpaperRefresher
+import com.android.wallpaper.module.WallpaperStatusChecker
 import com.android.wallpaper.picker.category.client.LiveWallpapersClient
 import com.android.wallpaper.picker.category.data.repository.WallpaperCategoryRepository
 import com.android.wallpaper.picker.category.domain.interactor.CategoriesLoadingStatusInteractor
@@ -71,6 +74,7 @@ import com.android.wallpaper.testing.FakeWallpaperRefresher
 import com.android.wallpaper.testing.TestNetworkStatusNotifier
 import com.android.wallpaper.testing.TestPackageStatusNotifier
 import com.android.wallpaper.testing.TestWallpaperPreferences
+import com.android.wallpaper.testing.TestWallpaperStatusChecker
 import com.android.wallpaper.util.WallpaperParser
 import com.android.wallpaper.util.converter.category.CategoryFactory
 import dagger.Binds
@@ -193,6 +197,12 @@ internal abstract class SharedAppTestModule {
         impl: DefaultCategoryWallpapersRepository
     ): CategoryWallpapersRepository
 
+    @Binds
+    @Singleton
+    abstract fun bindWallpaperStatusChecker(
+        impl: TestWallpaperStatusChecker
+    ): WallpaperStatusChecker
+
     companion object {
 
         /** Provide a BroadcastRunning Executor (for sending and receiving broadcasts). */
@@ -280,6 +290,17 @@ internal abstract class SharedAppTestModule {
         @Singleton
         fun provideWallpaperRefresher(prefs: TestWallpaperPreferences): WallpaperRefresher {
             return FakeWallpaperRefresher(prefs)
+        }
+
+        @Provides
+        @Singleton
+        fun provideThemeManager(
+            @ApplicationContext context: Context,
+            baseFlags: BaseFlags,
+        ): ThemeManager? {
+            return if (baseFlags.isThemeServiceEnabled()) {
+                context.getSystemService(ThemeManager::class.java)
+            } else null
         }
     }
 }

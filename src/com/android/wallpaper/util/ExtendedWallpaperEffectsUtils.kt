@@ -82,6 +82,7 @@ object ExtendedWallpaperEffectsUtils {
         lifecycleOwner: LifecycleOwner,
         wallpaperPreviewViewModel: WallpaperPreviewViewModel,
         context: Context?,
+        exitActivityOnCancel: Boolean = false,
     ): ActivityResultLauncher<Intent> {
         return activity.activityResultRegistry.register(
             PREVIEW_RESULT_REGISTRY,
@@ -93,28 +94,43 @@ object ExtendedWallpaperEffectsUtils {
 
                 override fun parseResult(resultCode: Int, intent: Intent?): Int {
                     if (resultCode == RESULT_OK) {
-                        wallpaperPreviewViewModel.wallpaper.value?.let { unpackedWallpaperModel ->
-                            context?.let { unpackedContext ->
+                        context?.let { unpackedContext ->
+                            val updateModel = { model: LiveWallpaperModel ->
+                                wallpaperPreviewViewModel.setShouldUpdateSelectedPreviewTab(true)
+                                wallpaperPreviewViewModel.setPreviewWallpaperModel(model)
+                            }
+                            val description =
+                                intent
+                                    ?.extras
+                                    ?.getParcelable(
+                                        WALLPAPER_DESCRIPTION_CONTENT_HANDLING,
+                                        WallpaperDescription::class.java,
+                                    )
+
+                            if (wallpaperPreviewViewModel.wallpaper.value != null) {
                                 ContentHandlingUtil.updatePreview(
                                     context = unpackedContext.applicationContext,
-                                    wallpaperModel = unpackedWallpaperModel,
-                                    wallpaperDescription =
-                                        intent
-                                            ?.extras
-                                            ?.getParcelable(
-                                                WALLPAPER_DESCRIPTION_CONTENT_HANDLING,
-                                                WallpaperDescription::class.java,
-                                            ),
-                                ) { wallpaperModel ->
-                                    wallpaperPreviewViewModel.setShouldUpdateSelectedPreviewTab(
-                                        true
+                                    wallpaperModel = wallpaperPreviewViewModel.wallpaper.value!!,
+                                    wallpaperDescription = description,
+                                    updateModel,
+                                )
+                            } else {
+                                val convertedLiveWallpaperModel: LiveWallpaperModel? =
+                                    description?.toLiveWallpaperModel(
+                                        unpackedContext.applicationContext
                                     )
-                                    wallpaperPreviewViewModel.setPreviewWallpaperModel(
-                                        wallpaperModel
+                                if (convertedLiveWallpaperModel != null) {
+                                    updateModel(convertedLiveWallpaperModel)
+                                } else {
+                                    Log.e(
+                                        TAG,
+                                        "Failed to convert description to live wallpaper model",
                                     )
                                 }
                             }
                         }
+                    } else {
+                        if (exitActivityOnCancel) activity.finishAfterTransition()
                     }
                     return resultCode
                 }
@@ -122,12 +138,8 @@ object ExtendedWallpaperEffectsUtils {
         ) {}
     }
 
-    private fun isExtendedEffectWallpaperModel(
-        model: WallpaperModel?,
-        context: Context,
-        flags: BaseFlags,
-    ): Boolean =
-        flags.isExtendedWallpaperEnabled() &&
+    private fun isExtendedEffectWallpaperModel(model: WallpaperModel?, context: Context): Boolean =
+        BaseFlags.get(context).isExtendedWallpaperEnabled() &&
             model is LiveWallpaperModel &&
             model.liveWallpaperData.isEffectWallpaper &&
             isExtendedEffectWallpaper(
@@ -140,9 +152,8 @@ object ExtendedWallpaperEffectsUtils {
         launcher: ActivityResultLauncher<Intent>,
         context: Context,
         wallpaperConnectionUtils: WallpaperConnectionUtils,
-        flags: BaseFlags,
     ) {
-        val isExtendedEffect = isExtendedEffectWallpaperModel(wallpaper, context, flags)
+        val isExtendedEffect = isExtendedEffectWallpaperModel(wallpaper, context)
         launchExtendedWallpaperEffects(wallpaper, launcher, isExtendedEffect, context)
         if (isExtendedEffect) {
             // Disconnect engine if it's live extended effect wallpaper
@@ -170,7 +181,7 @@ object ExtendedWallpaperEffectsUtils {
                 WALLPAPER_DESCRIPTION_CONTENT_HANDLING,
                 (wallpaper as LiveWallpaperModel).liveWallpaperData.description,
             )
-        } else if (BaseFlags.get().isRecentWallpapersFromSystemEnabled(context)) {
+        } else {
             Log.d(TAG, "destination: ${wallpaper.commonWallpaperData.destination}")
             when (wallpaper.commonWallpaperData.destination) {
                 Destination.NOT_APPLIED -> {
@@ -203,17 +214,6 @@ object ExtendedWallpaperEffectsUtils {
                     Log.d(TAG, "Using lock screen bitmap")
                     extendedWallpaperIntent.putExtra(SOURCE_BITMAP_SCREEN, FLAG_LOCK)
                 }
-            }
-        } else {
-            val photoUri = (wallpaper as StaticWallpaperModel).imageWallpaperData?.uri
-            Log.d("ExtendedWallpaperEffectsUtils", "PhotoURI is: $photoUri")
-            photoUri?.let {
-                context.grantUriPermission(
-                    extendedWallpaperPackageName,
-                    photoUri,
-                    Intent.FLAG_GRANT_READ_URI_PERMISSION,
-                )
-                extendedWallpaperIntent.putExtra("PHOTO_URI", it)
             }
         }
         try {

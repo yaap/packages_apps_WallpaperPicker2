@@ -58,4 +58,13 @@ interface CategoryWallpapersRepository {
 
     /** Updates the selected wallpaper category to reload its wallpaper data. */
     fun refreshWallpapers()
+
+    /** Clears the selected category and wallpapers for the category */
+    fun clearSelectedCategory()
+
+    /** This starts the wallpaper rotation process for the current category */
+    suspend fun startRotation(networkPreference: Int)
+
+    /** Invalidates the any cached wallpapers for the given [CategoryModel] */
+    fun invalidateCache(categoryId: String)
 }

@@ -142,21 +142,19 @@ object OptionItemBinder2 {
                 )
 
             val foregroundColorBinding =
-                if (!viewModel.skipForegroundColorBinding) {
-                    ColorUpdateBinder.bind(
-                        setColor = { color -> foregroundView?.setColorFilter(color) },
-                        color =
-                            viewModel.isSelected.flatMapLatest { isSelected ->
-                                if (isSelected) {
-                                    it.colorOnPrimaryFixed
-                                } else {
-                                    it.colorOnSurfaceVariant
-                                }
-                            },
-                        shouldAnimate = { false },
-                        lifecycleOwner = lifecycleOwner,
-                    )
-                } else null
+                ColorUpdateBinder.bind(
+                    setColor = { color -> foregroundView?.setColorFilter(color) },
+                    color =
+                        viewModel.isSelected.flatMapLatest { isSelected ->
+                            if (isSelected) {
+                                it.colorOnPrimaryFixed
+                            } else {
+                                it.colorOnSurfaceVariant
+                            }
+                        },
+                    shouldAnimate = { false },
+                    lifecycleOwner = lifecycleOwner,
+                )
 
             val unselectedBackgroundColorBinding =
                 ColorUpdateBinder.bind(
@@ -231,7 +229,10 @@ object OptionItemBinder2 {
                             viewModel.onClicked.collect { onClicked ->
                                 view.setOnClickListener(
                                     if (onClicked != null) {
-                                        View.OnClickListener { onClicked.invoke() }
+                                        View.OnClickListener {
+                                            onClicked.invoke()
+                                            view.requestFocus()
+                                        }
                                     } else {
                                         null
                                     }

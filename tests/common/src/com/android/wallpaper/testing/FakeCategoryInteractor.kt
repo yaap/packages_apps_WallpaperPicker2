@@ -39,6 +39,10 @@ class FakeCategoryInteractor @Inject constructor() : CategoryInteractor {
         emit(categoryModels)
     }
 
+    override fun fetchDelayedCategories() {
+        // Do nothing
+    }
+
     override fun refreshDueToLocaleChange() {
         // Do nothing
     }
@@ -76,4 +80,7 @@ class FakeCategoryInteractor @Inject constructor() : CategoryInteractor {
     }
 
     override val isNetworkCategoriesNotEmpty: Flow<Boolean> = emptyFlow()
+
+    override val defaultRecentCategories: Flow<List<CategoryModel>>
+        get() = TODO("Not yet implemented")
 }

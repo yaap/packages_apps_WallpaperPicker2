@@ -23,6 +23,7 @@
     <!-- Dimensions for all grid item tiles. -->
     <dimen name="grid_item_all_radius">28dp</dimen>
     <dimen name="grid_item_all_radius_small">20dp</dimen>
+    <dimen name="grid_item_start">18dp</dimen>
 
     <!-- Dimensions for "category" tiles. -->
     <dimen name="grid_item_category_label_padding_top">6dp</dimen>
@@ -440,6 +441,10 @@
     <dimen name="wallpaper_picker_entry_background_top_corner_radius">42dp</dimen>
     <dimen name="wallpaper_picker_entry_button_drawable_padding">12dp</dimen>
     <dimen name="picker_motion_layout_bottom_padding">0dp</dimen>
+
+    <!-- Vertical padding for the customization toolbar. Default is 0dp, but it's overridden
+         via desktop RRO to provide more space on desktop. -->
+    <dimen name="customization_toolbar_vertical_padding">0dp</dimen>
 
     <!-- Dimensions for the floating tab toolbar -->
     <dimen name="floating_tab_toolbar_padding_vertical">8dp</dimen>

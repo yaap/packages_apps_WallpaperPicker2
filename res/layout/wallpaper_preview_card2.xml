@@ -17,8 +17,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:clipChildren="false"
-    android:importantForAccessibility="no">
+    android:clipChildren="false">
 
     <com.android.wallpaper.picker.preview.ui.view.FullPreviewFrameLayout
         android:id="@+id/wallpaper_preview_crop"
@@ -46,6 +45,12 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:importantForAccessibility="noHideDescendants" />
+
+            <androidx.compose.ui.platform.ComposeView
+                android:id="@+id/alternative_workspace_view"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:visibility="gone" />
 
             <View
                 android:id="@+id/preview_scrim"

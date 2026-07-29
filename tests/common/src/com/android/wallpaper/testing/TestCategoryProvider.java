@@ -65,16 +65,6 @@ public class TestCategoryProvider implements CategoryProvider {
     }
 
     @Override
-    public int getSize() {
-        return mCategories == null ? 0 : mCategories.size();
-    }
-
-    @Override
-    public Category getCategory(int index) {
-        return mCategories == null ? null : mCategories.get(index);
-    }
-
-    @Override
     public Category getCategory(String collectionId) {
         Category category;
         for (int i = 0; i < mCategories.size(); i++) {
@@ -84,27 +74,6 @@ public class TestCategoryProvider implements CategoryProvider {
             }
         }
         return null;
-    }
-
-    @Override
-    public boolean isCategoriesFetched() {
-        return false;
-    }
-
-    @Override
-    public boolean resetIfNeeded() {
-        mCategories.clear();
-        return true;
-    }
-
-    @Override
-    public boolean isCreativeCategoryAvailable() {
-        return false;
-    }
-
-    @Override
-    public boolean isFeaturedCollectionAvailable() {
-        return false;
     }
 
     /** Returns a list of test Category objects used by this TestCategoryProvider. */

@@ -20,9 +20,11 @@ import com.android.wallpaper.picker.data.WallpaperModel
 import com.android.wallpaper.picker.wallpapers.data.repository.CategoryWallpapersRepository
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.withContext
 
 /** This class provides the wallpaper related [Flow] data for the selected [CategoryModel] */
 @Singleton
@@ -39,6 +41,27 @@ constructor(private val categoryWallpapersRepository: CategoryWallpapersReposito
                 it?.commonCategoryData?.title ?: ""
             }
 
+    override val isRotationEnabled: Flow<Boolean>
+        get() =
+            categoryWallpapersRepository.selectedCategoryModel.map {
+                (it?.commonCategoryData?.isRotationEnabled == true)
+            }
+
     override val isWallpapersFetching: StateFlow<Boolean>
         get() = categoryWallpapersRepository.isWallpapersFetching
+
+    override fun clearSelectedCategory() {
+        categoryWallpapersRepository.clearSelectedCategory()
+    }
+
+    override fun refreshCategoryWallpapers(collectionId: String) {
+        categoryWallpapersRepository.invalidateCache(collectionId)
+        categoryWallpapersRepository.refreshWallpapers()
+    }
+
+    override suspend fun startRotation(networkPreference: Int) {
+        withContext(Dispatchers.IO) {
+            categoryWallpapersRepository.startRotation(networkPreference)
+        }
+    }
 }

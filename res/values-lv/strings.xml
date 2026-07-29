@@ -56,6 +56,8 @@
     <string name="start_rotation_progress_message" msgid="7872623873682262083">"Notiek pirmās fona tapetes lejupielāde…"</string>
     <string name="start_rotation_error_message" msgid="3053799836719618972">"Nevar lejupielādēt pirmo fona tapeti. Lūdzu, pārbaudiet tīkla iestatījumus un mēģiniet vēlreiz."</string>
     <string name="start_rotation_dialog_body" msgid="7903554799046364916">"Fona tapete tiks automātiski mainīta katru dienu."</string>
+    <string name="collapse_content_description" msgid="47845329734521980">"Sakļaut"</string>
+    <string name="expand_content_description" msgid="2422558308356416382">"Izvērst"</string>
     <string name="settings_button_label" msgid="8724734130079207955">"Iestatījumi"</string>
     <string name="explore" msgid="7468719504199497281">"Apskatīt"</string>
     <string name="next_wallpaper" msgid="3911873152952596232">"Nākamā fona tapete"</string>
@@ -118,6 +120,7 @@
     <string name="home_wallpaper_preview_card_content_description" msgid="4059418716070821630">"Sākuma ekrāna fona tapetes priekšskatījums"</string>
     <string name="collection_not_exist_msg" msgid="3504852962885064842">"Kolekcija nepastāv"</string>
     <string name="wallpaper_exit_split_screen" msgid="1928870664619591636">"Izslēdziet ekrāna sadalīšanas režīmu un mēģiniet vēlreiz"</string>
+    <string name="wallpaper_preview_error" msgid="8230796042388952229">"Nevar parādīt fona tapetes priekšskatījumu."</string>
     <string name="set_wallpaper_dialog_set_button" msgid="5760149969510325088">"Iestatīt"</string>
     <string name="cancel" msgid="4970902691067201584">"Atcelt"</string>
     <string name="hide_ui_preview_text" msgid="6766076482511252295">"Paslēpt saskarnes priekšskatījumu"</string>
@@ -146,7 +149,7 @@
     <string name="reset_confirmation_dialog_title" msgid="3391905685838213712">"Vai atiestatīt izmaiņas?"</string>
     <string name="reset_confirmation_dialog_message" msgid="888669268626289603">"Jūsu veiktās izmaiņas netiks saglabātas."</string>
     <string name="more_wallpapers" msgid="8116268433411881705">"Citas fona tapetes"</string>
-    <string name="view_all_wallpapers" msgid="1555854274767599522">"&gt;\nSkatīt visu"</string>
+    <string name="view_all_wallpapers" msgid="4480657694212439906">"Skatīt visu"</string>
     <string name="wallpapers" msgid="7133442512006469886">"Fona tapetes"</string>
     <string name="recents_wallpaper_label" msgid="8653165542635660222">"%1$s, %2$d"</string>
     <string name="default_wallpaper_title" msgid="2541071182656978180">"Fona tapete"</string>

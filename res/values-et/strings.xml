@@ -33,7 +33,7 @@
     <string name="choose_a_wallpaper_section_title" msgid="1009823506890453891">"Taustapildi valimine"</string>
     <string name="choose_a_curated_photo_section_title" msgid="7360675459203465887">"Soovitatud fotod"</string>
     <string name="creative_wallpaper_title" msgid="3581650238648981372">"Taustapildi loomine"</string>
-    <string name="wallpaper_studio_title" msgid="4521517442580329214">"Wallpaper Studio"</string>
+    <string name="wallpaper_studio_title" msgid="4521517442580329214">"Taustapiltide stuudio"</string>
     <string name="home_screen_message" msgid="106444102822522813">"Avakuva"</string>
     <string name="lock_screen_message" msgid="1534506081955058013">"Lukustuskuva"</string>
     <string name="home_and_lock_short_label" msgid="2937922943541927983">"Avaekraan ja lukustuskuva"</string>
@@ -56,6 +56,8 @@
     <string name="start_rotation_progress_message" msgid="7872623873682262083">"Esimese taustapildi allalaadimine …"</string>
     <string name="start_rotation_error_message" msgid="3053799836719618972">"Esimest taustapilti ei saa alla laadida. Kontrollige võrguseadeid ja proovige uuesti."</string>
     <string name="start_rotation_dialog_body" msgid="7903554799046364916">"Taustapilt vahetub automaatselt iga päev"</string>
+    <string name="collapse_content_description" msgid="47845329734521980">"Ahenda"</string>
+    <string name="expand_content_description" msgid="2422558308356416382">"Laienda"</string>
     <string name="settings_button_label" msgid="8724734130079207955">"Seaded"</string>
     <string name="explore" msgid="7468719504199497281">"Avastage"</string>
     <string name="next_wallpaper" msgid="3911873152952596232">"Järgmine taustapilt"</string>
@@ -118,6 +120,7 @@
     <string name="home_wallpaper_preview_card_content_description" msgid="4059418716070821630">"Avakuva taustapildi eelvaade"</string>
     <string name="collection_not_exist_msg" msgid="3504852962885064842">"Kogu pole olemas"</string>
     <string name="wallpaper_exit_split_screen" msgid="1928870664619591636">"Väljuge poolitatud ekraani režiimist ja proovige uuesti"</string>
+    <string name="wallpaper_preview_error" msgid="8230796042388952229">"Taustapildi eelvaadet ei õnnestu kuvada."</string>
     <string name="set_wallpaper_dialog_set_button" msgid="5760149969510325088">"Määra"</string>
     <string name="cancel" msgid="4970902691067201584">"Tühista"</string>
     <string name="hide_ui_preview_text" msgid="6766076482511252295">"Peida kasutajaliidese eelvaade"</string>
@@ -146,7 +149,7 @@
     <string name="reset_confirmation_dialog_title" msgid="3391905685838213712">"Kas lähtestada muudatused?"</string>
     <string name="reset_confirmation_dialog_message" msgid="888669268626289603">"Muudatusi ei salvestata"</string>
     <string name="more_wallpapers" msgid="8116268433411881705">"Rohkem taustapilte"</string>
-    <string name="view_all_wallpapers" msgid="1555854274767599522">"&gt;\nKuva kõik"</string>
+    <string name="view_all_wallpapers" msgid="4480657694212439906">"Kuva kõik"</string>
     <string name="wallpapers" msgid="7133442512006469886">"Taustapildid"</string>
     <string name="recents_wallpaper_label" msgid="8653165542635660222">"%1$s, %2$d"</string>
     <string name="default_wallpaper_title" msgid="2541071182656978180">"Taustapilt"</string>

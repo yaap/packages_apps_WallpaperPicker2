@@ -56,6 +56,8 @@
     <string name="start_rotation_progress_message" msgid="7872623873682262083">"Dina-download ang unang wallpaper…"</string>
     <string name="start_rotation_error_message" msgid="3053799836719618972">"Hindi ma-download ang unang wallpaper. Pakisuri ang mga setting ng iyong network at subukan ulit."</string>
     <string name="start_rotation_dialog_body" msgid="7903554799046364916">"Awtomatikong magpapalit ang wallpaper araw-araw"</string>
+    <string name="collapse_content_description" msgid="47845329734521980">"I-collapse"</string>
+    <string name="expand_content_description" msgid="2422558308356416382">"I-expand"</string>
     <string name="settings_button_label" msgid="8724734130079207955">"Mga Setting"</string>
     <string name="explore" msgid="7468719504199497281">"I-explore"</string>
     <string name="next_wallpaper" msgid="3911873152952596232">"Susunod na wallpaper"</string>
@@ -118,6 +120,7 @@
     <string name="home_wallpaper_preview_card_content_description" msgid="4059418716070821630">"Preview ng wallpaper ng home screen"</string>
     <string name="collection_not_exist_msg" msgid="3504852962885064842">"Wala ang koleksyon"</string>
     <string name="wallpaper_exit_split_screen" msgid="1928870664619591636">"Lumabas sa split screen mode at subukan ulit"</string>
+    <string name="wallpaper_preview_error" msgid="8230796042388952229">"Hindi maipakita ang preview ng wallpaper"</string>
     <string name="set_wallpaper_dialog_set_button" msgid="5760149969510325088">"Itakda"</string>
     <string name="cancel" msgid="4970902691067201584">"Kanselahin"</string>
     <string name="hide_ui_preview_text" msgid="6766076482511252295">"Itago ang Preview ng UI"</string>
@@ -146,7 +149,7 @@
     <string name="reset_confirmation_dialog_title" msgid="3391905685838213712">"I-reset ang mga pagbabago?"</string>
     <string name="reset_confirmation_dialog_message" msgid="888669268626289603">"Hindi mase-save ang iyong mga pagbabago"</string>
     <string name="more_wallpapers" msgid="8116268433411881705">"Higit pang wallpaper"</string>
-    <string name="view_all_wallpapers" msgid="1555854274767599522">"&gt;\nTingnan ang lahat"</string>
+    <string name="view_all_wallpapers" msgid="4480657694212439906">"Tingnan lahat"</string>
     <string name="wallpapers" msgid="7133442512006469886">"Mga wallpaper"</string>
     <string name="recents_wallpaper_label" msgid="8653165542635660222">"%1$s, %2$d"</string>
     <string name="default_wallpaper_title" msgid="2541071182656978180">"Wallpaper"</string>

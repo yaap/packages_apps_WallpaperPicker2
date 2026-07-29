@@ -16,6 +16,7 @@
 
 package com.android.wallpaper.picker.di.modules
 
+import android.app.ThemeManager
 import android.app.WallpaperManager
 import android.content.ContentResolver
 import android.content.Context
@@ -25,16 +26,19 @@ import android.os.Handler
 import android.os.HandlerThread
 import android.os.Looper
 import android.os.Process
+import com.android.wallpaper.config.BaseFlags
 import com.android.wallpaper.module.CreativeHelper
 import com.android.wallpaper.module.DefaultCreativeHelper
 import com.android.wallpaper.module.DefaultNetworkStatusNotifier
 import com.android.wallpaper.module.DefaultPackageStatusNotifier
 import com.android.wallpaper.module.DefaultWallpaperRefresher
+import com.android.wallpaper.module.DefaultWallpaperStatusChecker
 import com.android.wallpaper.module.LargeScreenMultiPanesChecker
 import com.android.wallpaper.module.MultiPanesChecker
 import com.android.wallpaper.module.NetworkStatusNotifier
 import com.android.wallpaper.module.PackageStatusNotifier
 import com.android.wallpaper.module.WallpaperRefresher
+import com.android.wallpaper.module.WallpaperStatusChecker
 import com.android.wallpaper.network.Requester
 import com.android.wallpaper.network.WallpaperRequester
 import com.android.wallpaper.picker.MyPhotosStarter
@@ -160,6 +164,12 @@ abstract class SharedAppModule {
 
     @Binds
     @Singleton
+    abstract fun bindWallpaperStatusChecker(
+        impl: DefaultWallpaperStatusChecker
+    ): WallpaperStatusChecker
+
+    @Binds
+    @Singleton
     abstract fun bindWallpapersInteractor(
         impl: DefaultCategoryWallpapersInteractor
     ): CategoryWallpapersInteractor
@@ -248,6 +258,17 @@ abstract class SharedAppModule {
         @Singleton
         fun provideWallpaperManager(@ApplicationContext appContext: Context): WallpaperManager {
             return WallpaperManager.getInstance(appContext)
+        }
+
+        @Provides
+        @Singleton
+        fun provideThemeManager(
+            @ApplicationContext context: Context,
+            baseFlags: BaseFlags,
+        ): ThemeManager? {
+            return if (baseFlags.isThemeServiceEnabled()) {
+                context.getSystemService(ThemeManager::class.java)
+            } else null
         }
     }
 }

@@ -39,4 +39,24 @@ interface CategoryWallpapersInteractor {
      * Emits `true` while wallpapers are loading, and `false` when loading is complete or idle.
      */
     val isWallpapersFetching: StateFlow<Boolean>
+
+    /**
+     * A [Flow] that indicates if the currently selected category supports wallpaper rotation
+     *
+     * Emits 'true' for a category that supports wallpaper rotation and 'false' otherwise
+     */
+    val isRotationEnabled: Flow<Boolean>
+
+    /** Clears the selected category and wallpapers for the category */
+    fun clearSelectedCategory()
+
+    /**
+     * Refresh wallpapers in a specific category. Note that not only the wallpapers in the specified
+     * category will be refreshed, but possibly other live wallpaper categories will also be
+     * refreshed.
+     */
+    fun refreshCategoryWallpapers(collectionId: String)
+
+    /** This starts the wallpaper rotation process for the current category */
+    suspend fun startRotation(networkPreference: Int)
 }

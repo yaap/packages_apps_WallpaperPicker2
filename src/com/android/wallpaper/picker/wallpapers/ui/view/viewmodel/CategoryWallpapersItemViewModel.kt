@@ -52,22 +52,12 @@ sealed class CategoryWallpapersItemViewModel {
     ) : CategoryWallpapersItemViewModel()
 
     /**
-     * Represents a section that holds plain wallpaper thumbnails
-     *
-     * @property thumbnailAssets A list of [ThumbnailsViewModelCategory] representing the thumbnails
-     *   to display.
-     */
-    data class PlainThumbnailsViewModelCategory(
-        val thumbnailAssets: List<ThumbnailsViewModelCategory>
-    ) : CategoryWallpapersItemViewModel()
-
-    /**
      * Represents a section that holds a single thumbnail preview of a wallpaper or template.
      *
      * @property thumbnailAsset The [Asset] associated with the thumbnail.
      * @property title An optional title associated with the thumbnail.
      * @property contentDescription An optional content description for accessibility.
-     * @property onSectionClicked An optional callback invoked when the thumbnail is clicked.
+     * @property getLaunchActivityIntent An optional callback invoked when the thumbnail is clicked.
      */
     data class ThumbnailsViewModelCategory(
         val thumbnailAsset: Asset,
@@ -75,6 +65,19 @@ sealed class CategoryWallpapersItemViewModel {
         val contentDescription: String?,
         val isApplied: Boolean = false,
         val isDownloadable: Boolean = false,
-        val onSectionClicked: (() -> Intent)? = null,
+        val getLaunchActivityIntent: (() -> Intent)? = null,
+    ) : CategoryWallpapersItemViewModel()
+
+    /**
+     * Represents an un-styled list of wallpaper thumbnails.
+     *
+     * @property thumbnails A list of [ThumbnailsViewModelCategory] objects that belong to this
+     *   group.
+     * @property areTilesLarge A boolean indicating whether the thumbnails in this row should be
+     *   rendered using the larger, "featured" tile size or the regular size.
+     */
+    data class PlainThumbnailsViewModelCategory(
+        val thumbnails: List<ThumbnailsViewModelCategory>,
+        val areTilesLarge: Boolean,
     ) : CategoryWallpapersItemViewModel()
 }

@@ -18,6 +18,7 @@
 package com.android.wallpaper.picker.option.ui.viewmodel
 
 import com.android.wallpaper.picker.common.text.ui.viewmodel.Text
+import com.android.wallpaper.picker.option.ui.compose.OptionBounceable
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 
@@ -57,7 +58,4 @@ data class OptionItemViewModel2<Payload>(
 
     /** Whether onClicked binding should be skipped. */
     val skipOnClickBinding: Boolean = false,
-
-    /** Whether foreground color binding should be skipped. */
-    val skipForegroundColorBinding: Boolean = false,
-)
+) : OptionBounceable()

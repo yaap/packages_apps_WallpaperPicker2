@@ -56,6 +56,8 @@
     <string name="start_rotation_progress_message" msgid="7872623873682262083">"Download del primo sfondo…"</string>
     <string name="start_rotation_error_message" msgid="3053799836719618972">"Impossibile scaricare il primo sfondo. Controlla le impostazioni di rete e riprova."</string>
     <string name="start_rotation_dialog_body" msgid="7903554799046364916">"Lo sfondo cambierà automaticamente ogni giorno"</string>
+    <string name="collapse_content_description" msgid="47845329734521980">"Comprimi"</string>
+    <string name="expand_content_description" msgid="2422558308356416382">"Espandi"</string>
     <string name="settings_button_label" msgid="8724734130079207955">"Impostazioni"</string>
     <string name="explore" msgid="7468719504199497281">"Esplora"</string>
     <string name="next_wallpaper" msgid="3911873152952596232">"Sfondo successivo"</string>
@@ -77,7 +79,7 @@
     <string name="folded_device_state_description" msgid="4972608448265616264">"Chiuso"</string>
     <string name="unfolded_device_state_description" msgid="3071975681472460627">"Aperto"</string>
     <string name="full_preview_check_button_description" msgid="700484353763952975">"Modifica sfondo completata"</string>
-    <string name="suggestion_chip_close_button_description" msgid="7063924604587228866">"Chiudi annuncio del pacchetto di temi"</string>
+    <string name="suggestion_chip_close_button_description" msgid="7063924604587228866">"Chiudi annuncio del pacchetto tematico"</string>
     <string name="refreshing_daily_wallpaper_dialog_message" msgid="1975910873362855761">"Aggiornamento dello sfondo giornaliero…"</string>
     <string name="refresh_daily_wallpaper_failed_message" msgid="4749879993812557166">"Impossibile aggiornare lo sfondo giornaliero. Controlla la connessione di rete e riprova."</string>
     <string name="on_device_wallpapers_category_title" msgid="805819102071369004">"Sfondi sul dispositivo"</string>
@@ -118,6 +120,7 @@
     <string name="home_wallpaper_preview_card_content_description" msgid="4059418716070821630">"Anteprima sfondo schermata Home"</string>
     <string name="collection_not_exist_msg" msgid="3504852962885064842">"La raccolta non esiste"</string>
     <string name="wallpaper_exit_split_screen" msgid="1928870664619591636">"Esci dalla modalità schermo diviso e riprova"</string>
+    <string name="wallpaper_preview_error" msgid="8230796042388952229">"Impossibile visualizzare l\'anteprima dello sfondo"</string>
     <string name="set_wallpaper_dialog_set_button" msgid="5760149969510325088">"Configura"</string>
     <string name="cancel" msgid="4970902691067201584">"Annulla"</string>
     <string name="hide_ui_preview_text" msgid="6766076482511252295">"Nascondi UI Anteprima"</string>
@@ -146,7 +149,7 @@
     <string name="reset_confirmation_dialog_title" msgid="3391905685838213712">"Vuoi reimpostare le modifiche?"</string>
     <string name="reset_confirmation_dialog_message" msgid="888669268626289603">"Le modifiche non verranno salvate"</string>
     <string name="more_wallpapers" msgid="8116268433411881705">"Altri sfondi"</string>
-    <string name="view_all_wallpapers" msgid="1555854274767599522">"&gt;\nVisualizza tutti"</string>
+    <string name="view_all_wallpapers" msgid="4480657694212439906">"Visualizza tutto"</string>
     <string name="wallpapers" msgid="7133442512006469886">"Sfondi"</string>
     <string name="recents_wallpaper_label" msgid="8653165542635660222">"%1$s, %2$d"</string>
     <string name="default_wallpaper_title" msgid="2541071182656978180">"Sfondo"</string>

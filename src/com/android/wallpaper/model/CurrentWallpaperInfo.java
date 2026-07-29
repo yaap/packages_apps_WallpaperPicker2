@@ -25,11 +25,9 @@ import android.os.Parcel;
 
 import androidx.annotation.Nullable;
 
-import com.android.systemui.shared.Flags;
 import com.android.wallpaper.asset.Asset;
 import com.android.wallpaper.asset.BuiltInWallpaperAsset;
 import com.android.wallpaper.asset.CurrentWallpaperAsset;
-import com.android.wallpaper.config.BaseFlags;
 import com.android.wallpaper.module.InjectorProvider;
 
 import java.util.ArrayList;
@@ -38,7 +36,10 @@ import java.util.List;
 
 /**
  * Represents the currently set wallpaper on N+ devices. Should not be used to set a new wallpaper.
+ *
+ * @deprecated See b/448461608
  */
+@Deprecated
 public class CurrentWallpaperInfo extends WallpaperInfo {
     public static final String UNKNOWN_CURRENT_WALLPAPER_ID = "unknown_current_wallpaper_id";
 
@@ -104,7 +105,7 @@ public class CurrentWallpaperInfo extends WallpaperInfo {
 
     @Override
     public String getWallpaperId() {
-        if (Flags.newCustomizationPickerUi() && mWallpaperId != null) {
+        if (mWallpaperId != null) {
             return mWallpaperId;
         } else {
             return UNKNOWN_CURRENT_WALLPAPER_ID + mWallpaperManagerFlag;
@@ -147,7 +148,6 @@ public class CurrentWallpaperInfo extends WallpaperInfo {
         boolean isSystemBuiltIn = mWallpaperManagerFlag == WallpaperManager.FLAG_SYSTEM
                 && !InjectorProvider.getInjector().getWallpaperStatusChecker(context)
                 .isHomeStaticWallpaperSet();
-        BaseFlags flags = InjectorProvider.getInjector().getFlags();
         // Only get the full wallpaper asset when previewing a multi-crop wallpaper, otherwise get
         // the cropped asset.
         boolean getFullAsset = !mCropHints.isEmpty();

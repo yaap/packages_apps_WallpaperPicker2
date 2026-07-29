@@ -32,6 +32,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
@@ -50,13 +51,13 @@ import com.android.wallpaper.module.MultiPanesChecker
 import com.android.wallpaper.module.logging.UserEventLogger
 import com.android.wallpaper.picker.AppbarFragment
 import com.android.wallpaper.picker.MyPhotosStarter
-import com.android.wallpaper.picker.WallpaperPickerDelegate.VIEW_ONLY_PREVIEW_WALLPAPER_REQUEST_CODE
 import com.android.wallpaper.picker.category.ui.binder.BannerProvider
 import com.android.wallpaper.picker.category.ui.binder.CategoriesBinder
 import com.android.wallpaper.picker.category.ui.view.providers.IndividualPickerFactory
 import com.android.wallpaper.picker.category.ui.viewmodel.CategoriesViewModel
 import com.android.wallpaper.picker.common.preview.data.repository.PersistentWallpaperModelRepository
 import com.android.wallpaper.picker.customization.shared.model.CategoryType
+import com.android.wallpaper.picker.customization.ui.CustomizationPickerActivity
 import com.android.wallpaper.picker.customization.ui.binder.ColorUpdateBinder
 import com.android.wallpaper.picker.customization.ui.viewmodel.ColorUpdateViewModel
 import com.android.wallpaper.picker.data.WallpaperModel
@@ -64,6 +65,7 @@ import com.android.wallpaper.picker.wallpapers.data.repository.CategoryWallpaper
 import com.android.wallpaper.picker.wallpapers.ui.view.CategoryWallpapersFragment
 import com.android.wallpaper.util.ActivityUtils
 import com.android.wallpaper.util.CuratedPhotosTimeUtil
+import com.android.wallpaper.util.LaunchSourceUtils.WALLPAPER_LAUNCH_SOURCE
 import com.android.wallpaper.util.SizeCalculator
 import com.android.wallpaper.util.converter.WallpaperModelFactory
 import com.google.android.material.appbar.AppBarLayout
@@ -87,6 +89,8 @@ class CategoriesFragment : Hilt_CategoriesFragment() {
     @Inject lateinit var categoryWallpapersRepository: CategoryWallpapersRepository
     private lateinit var photoPickerLauncher: ActivityResultLauncher<Intent>
     private lateinit var extendedWallpaperEffectsLauncher: ActivityResultLauncher<Intent>
+    private lateinit var pickMedia: ActivityResultLauncher<PickVisualMediaRequest>
+    private var shouldNavigateToExtendedWallpaperEffectsFromPhotoPicker = false
 
     // TODO: this may need to be scoped to fragment if the architecture changes
     private val categoriesViewModel by activityViewModels<CategoriesViewModel>()
@@ -132,6 +136,24 @@ class CategoriesFragment : Hilt_CategoriesFragment() {
                     setWallpaperEntryPoint = StyleEnums.SET_WALLPAPER_ENTRY_POINT_WALLPAPER_PREVIEW,
                 )
             }
+
+        pickMedia =
+            registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+                if (uri == null) {
+                    return@registerForActivityResult
+                }
+                val imageWallpaperInfo = ImageWallpaperInfo(uri)
+                val context = context ?: return@registerForActivityResult
+                val wallpaperModel =
+                    wallpaperModelFactory.getWallpaperModel(context, imageWallpaperInfo)
+                startPreviewActivity(
+                    wallpaperModel = wallpaperModel,
+                    isCreativeCategories = false,
+                    shouldNavigateToExtendedWallpaperEffects =
+                        shouldNavigateToExtendedWallpaperEffectsFromPhotoPicker,
+                    setWallpaperEntryPoint = StyleEnums.SET_WALLPAPER_ENTRY_POINT_WALLPAPER_PREVIEW,
+                )
+            }
     }
 
     private fun extractWallpaperModelFromResult(result: Intent, context: Context): WallpaperModel {
@@ -145,19 +167,8 @@ class CategoriesFragment : Hilt_CategoriesFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?,
     ): View {
-        val isNewPickerUi = BaseFlags.get().isNewPickerUi()
-
         val view =
-            if (isNewPickerUi) {
-                // Inflate categories fragment with new toolbar.
-                inflater.inflate(
-                    R.layout.categories_fragment2,
-                    container,
-                    /* attachToRoot= */ false,
-                )
-            } else {
-                inflater.inflate(R.layout.categories_fragment, container, /* attachToRoot= */ false)
-            }
+            inflater.inflate(R.layout.categories_fragment2, container, /* attachToRoot= */ false)
         setUpToolbar(view)
         setTitle(getText(R.string.wallpaper_title))
 
@@ -166,28 +177,26 @@ class CategoriesFragment : Hilt_CategoriesFragment() {
         val categoriesHeaderImage: ImageView? = view.findViewById(R.id.categories_header_image)
         categoriesHeaderImage?.let { it.isVisible = false }
 
-        if (isNewPickerUi) {
-            ColorUpdateBinder.bind(
-                setColor = { _ ->
-                    // There is no way to programmatically set app:liftOnScrollColor in
-                    // AppBarLayout, therefore remove and re-add view to update colors based on new
-                    // context
-                    val contentParent = view.requireViewById<ViewGroup>(R.id.content_parent)
-                    val appBarLayout = contentParent.requireViewById<AppBarLayout>(R.id.app_bar)
-                    contentParent.removeView(appBarLayout)
-                    layoutInflater.inflate(R.layout.section_header_content2, contentParent, true)
-                    setUpToolbar(view)
-                    setTitle(getText(R.string.wallpaper_title))
-                    contentParent.requestApplyInsets()
-                },
-                color = colorUpdateViewModel.colorSurfaceContainer,
-                shouldAnimate = { false },
-                lifecycleOwner = viewLifecycleOwner,
-            )
-        }
+        ColorUpdateBinder.bind(
+            setColor = { _ ->
+                // There is no way to programmatically set app:liftOnScrollColor in
+                // AppBarLayout, therefore remove and re-add view to update colors based on new
+                // context
+                val contentParent = view.requireViewById<ViewGroup>(R.id.content_parent)
+                val appBarLayout = contentParent.requireViewById<AppBarLayout>(R.id.app_bar)
+                contentParent.removeView(appBarLayout)
+                layoutInflater.inflate(R.layout.section_header_content2, contentParent, true)
+                setUpToolbar(view)
+                setTitle(getText(R.string.wallpaper_title))
+                contentParent.requestApplyInsets()
+            },
+            color = colorUpdateViewModel.colorSurfaceContainer,
+            shouldAnimate = { false },
+            lifecycleOwner = viewLifecycleOwner,
+        )
 
         CategoriesBinder.bind(
-            categoriesPage = view.requireViewById<RecyclerView>(R.id.content_parent),
+            categoriesPage = view.requireViewById(R.id.content_parent),
             viewModel = categoriesViewModel,
             windowWidth = SizeCalculator.getActivityWindowWidthPx(this.activity),
             colorUpdateViewModel = colorUpdateViewModel,
@@ -199,9 +208,9 @@ class CategoriesFragment : Hilt_CategoriesFragment() {
         ) { navigationEvent, callback ->
             when (navigationEvent) {
                 is CategoriesViewModel.NavigationEvent.NavigateToWallpaperCollection -> {
-                    if (BaseFlags.get().isWallpapersFragmentEnabled()) {
+                    if (BaseFlags.get(requireContext()).isWallpapersFragmentEnabled()) {
                         categoryWallpapersRepository.setSelectedCategory(
-                            navigationEvent.categoryModel
+                            category = navigationEvent.categoryModel
                         )
                         switchFragment(CategoryWallpapersFragment())
                     } else {
@@ -259,9 +268,10 @@ class CategoriesFragment : Hilt_CategoriesFragment() {
             isCreativeCategories = isCreativeCategories,
             shouldNavigateToExtendedWallpaperEffects = shouldNavigateToExtendedWallpaperEffects,
             isViewAsHome = isDestinationHome,
-            requestCode = VIEW_ONLY_PREVIEW_WALLPAPER_REQUEST_CODE,
+            requestCode = CustomizationPickerActivity.VIEW_ONLY_PREVIEW_WALLPAPER_REQUEST_CODE,
             isMultiPanesEnabled = multiPanesChecker.isMultiPanesEnabled(requireContext()),
             setWallpaperEntryPoint = setWallpaperEntryPoint,
+            wallpaperLaunchSource = arguments?.getString(WALLPAPER_LAUNCH_SOURCE) ?: "",
         )
     }
 
@@ -290,17 +300,12 @@ class CategoriesFragment : Hilt_CategoriesFragment() {
         shouldNavigateToExtendedWallpaperEffects: Boolean,
         callback: (() -> Unit)?,
     ) {
-        if (BaseFlags.get().isPhotoPickerEnabled()) {
-            parentFragmentManager.commit {
-                replace(
-                    R.id.fragment_container,
-                    PhotoPickerFragment.newInstance(
-                        shouldNavigateToExtendedWallpaperEffects =
-                            shouldNavigateToExtendedWallpaperEffects
-                    ),
-                )
-                addToBackStack(null)
-            }
+        if (BaseFlags.get(requireContext()).isEnableAndroidPhotoPicker()) {
+            shouldNavigateToExtendedWallpaperEffectsFromPhotoPicker =
+                shouldNavigateToExtendedWallpaperEffects
+            pickMedia.launch(
+                PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+            )
         } else {
             // make call to permission handler to grab photos and pass callback
             myPhotosStarterImpl.requestCustomPhotoPicker(
@@ -381,10 +386,16 @@ class CategoriesFragment : Hilt_CategoriesFragment() {
 
         private const val DESTINATION_SCREEN = "destination_screen"
 
-        fun newInstance(destinationScreen: Screen): CategoriesFragment {
+        fun newInstance(
+            destinationScreen: Screen,
+            wallpaperLaunchSource: String,
+        ): CategoriesFragment {
             return CategoriesFragment().apply {
                 arguments =
-                    Bundle().apply { putSerializable(DESTINATION_SCREEN, destinationScreen) }
+                    Bundle().apply {
+                        putSerializable(DESTINATION_SCREEN, destinationScreen)
+                        putString(WALLPAPER_LAUNCH_SOURCE, wallpaperLaunchSource)
+                    }
             }
         }
     }

@@ -82,7 +82,7 @@ public abstract class AppbarFragment extends BottomActionBarFragment
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (BaseFlags.get().isPageTransitionsFeatureEnabled(requireContext())) {
+        if (BaseFlags.get(requireContext()).isPageTransitionsFeatureEnabled(requireContext())) {
             setEnterTransition(new MaterialSharedAxis(MaterialSharedAxis.X, /* forward */ true));
             setReturnTransition(new MaterialSharedAxis(MaterialSharedAxis.X, /* forward */ false));
             setExitTransition(new MaterialSharedAxis(MaterialSharedAxis.X, /* forward */ true));
@@ -202,18 +202,11 @@ public abstract class AppbarFragment extends BottomActionBarFragment
     }
 
     private void setUpUpArrow() {
-        boolean isNewPickerUi = BaseFlags.get().isNewPickerUi();
-        Drawable backIcon = isNewPickerUi
-                ? getResources().getDrawable(
-                        com.android.settingslib.collapsingtoolbar.R.drawable
-                                .settingslib_expressive_icon_back)
-                .mutate()
-                : getResources().getDrawable(R.drawable.material_ic_arrow_back_black_24, null)
-                    .mutate();
+        Drawable backIcon = getResources().getDrawable(
+                com.android.settingslib.collapsingtoolbar.R.drawable
+                        .settingslib_expressive_icon_back)
+                .mutate();
         backIcon.setAutoMirrored(true);
-        if (!isNewPickerUi) {
-            backIcon.setTint(getToolbarTextColor());
-        }
         mToolbar.setNavigationIcon(backIcon);
         mToolbar.setNavigationContentDescription(R.string.bottom_action_bar_back);
         mToolbar.setNavigationOnClickListener(v -> mHost.onUpArrowPressed());

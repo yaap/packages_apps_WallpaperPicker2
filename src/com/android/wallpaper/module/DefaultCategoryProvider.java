@@ -15,7 +15,6 @@
  */
 package com.android.wallpaper.module;
 
-import static com.android.wallpaper.module.NetworkStatusNotifier.NETWORK_NOT_INITIALIZED;
 
 import android.content.Context;
 import android.content.pm.PackageManager;
@@ -41,7 +40,6 @@ import com.android.wallpaper.model.ThirdPartyAppCategory;
 import com.android.wallpaper.model.ThirdPartyLiveWallpaperCategory;
 import com.android.wallpaper.model.WallpaperCategory;
 import com.android.wallpaper.model.WallpaperInfo;
-import com.android.wallpaper.module.NetworkStatusNotifier.NetworkStatus;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
@@ -52,7 +50,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -72,7 +69,6 @@ public class DefaultCategoryProvider implements CategoryProvider {
     private static final int PRIORITY_ON_DEVICE = 200;
     private static final int PRIORITY_LIVE = 300;
     private static final int PRIORITY_THIRD_PARTY = 400;
-    public static final int CREATIVE_CATEGORY_PRIORITY = 1;
 
     protected static List<Category> sSystemCategories;
 
@@ -80,17 +76,9 @@ public class DefaultCategoryProvider implements CategoryProvider {
     protected ArrayList<Category> mCategories;
     protected boolean mFetchedCategories;
 
-    private NetworkStatusNotifier mNetworkStatusNotifier;
-    // The network status of the last fetch from the server.
-    @NetworkStatus
-    private int mNetworkStatus;
-    private Locale mLocale;
-
     public DefaultCategoryProvider(Context context) {
         mAppContext = context.getApplicationContext();
         mCategories = new ArrayList<>();
-        mNetworkStatusNotifier = InjectorProvider.getInjector().getNetworkStatusNotifier(context);
-        mNetworkStatus = NETWORK_NOT_INITIALIZED;
     }
 
     @Override
@@ -106,22 +94,7 @@ public class DefaultCategoryProvider implements CategoryProvider {
             mFetchedCategories = false;
         }
 
-        mNetworkStatus = mNetworkStatusNotifier.getNetworkStatus();
-        mLocale = getLocale();
         doFetch(receiver, forceRefresh);
-    }
-
-    @Override
-    public int getSize() {
-        return mFetchedCategories ? mCategories.size() : 0;
-    }
-
-    @Override
-    public Category getCategory(int index) {
-        if (!mFetchedCategories) {
-            throw new IllegalStateException("Categories are not available");
-        }
-        return mCategories.get(index);
     }
 
     @Override
@@ -136,22 +109,6 @@ public class DefaultCategoryProvider implements CategoryProvider {
         return null;
     }
 
-    @Override
-    public boolean isCategoriesFetched() {
-        return mFetchedCategories;
-    }
-
-    @Override
-    public boolean resetIfNeeded() {
-        if (mNetworkStatus != mNetworkStatusNotifier.getNetworkStatus()
-                || mLocale != getLocale()) {
-            mCategories.clear();
-            mFetchedCategories = false;
-            return true;
-        }
-        return false;
-    }
-
     /**
      * Returns an appropriate "my photos" custom photo category for the given device form factor.
      */
@@ -161,16 +118,6 @@ public class DefaultCategoryProvider implements CategoryProvider {
                 context.getString(R.string.image_wallpaper_collection_id),
                 PRIORITY_MY_PHOTOS_WHEN_CREATIVE_WALLPAPERS_ENABLED,
                 R.drawable.wallpaperpicker_emptystate /* overlayIconResId */);
-    }
-
-    @Override
-    public boolean isFeaturedCollectionAvailable() {
-        return false;
-    }
-
-    @Override
-    public boolean isCreativeCategoryAvailable() {
-        return false;
     }
 
     protected void doFetch(final CategoryReceiver receiver, boolean forceRefresh) {
@@ -189,10 +136,6 @@ public class DefaultCategoryProvider implements CategoryProvider {
         };
 
         new FetchCategoriesTask(delegatingReceiver, mAppContext).execute();
-    }
-
-    private Locale getLocale() {
-        return mAppContext.getResources().getConfiguration().getLocales().get(0);
     }
 
     /**

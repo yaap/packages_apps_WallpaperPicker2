@@ -26,6 +26,7 @@
   <uses-permission android:name="android.permission.WAKE_LOCK"/>
   <uses-permission android:name="com.android.wallpaper.NOTIFY_ROTATING_WALLPAPER_CHANGED"/>
   <uses-permission android:name="android.permission.SET_WALLPAPER_DIM_AMOUNT" />
+  <uses-permission android:name="android.permission.UPDATE_THEME_SETTINGS" />
 
   <queries>
       <!-- Specific intents Wallpaper picker query for -->
@@ -75,27 +76,12 @@
     <meta-data android:name="com.android.wallpaper.asset.WallpaperGlideModule"
          android:value="GlideModule"/>
 
-    <activity android:name="com.android.wallpaper.picker.CustomizationPickerActivity"
-        android:label="@string/app_name"
-        android:relinquishTaskIdentity="true"
-        android:resizeableActivity="false"
-        android:theme="@style/WallpaperTheme.NoBackground"
-        android:exported="true">
-    </activity>
-
-    <activity android:name="com.android.wallpaper.picker.customization.ui.CustomizationPickerActivity2"
+    <activity android:name="com.android.wallpaper.picker.customization.ui.CustomizationPickerActivity"
         android:label="@string/app_name"
         android:relinquishTaskIdentity="true"
         android:resizeableActivity="false"
         android:theme="@style/WallpaperTheme.NoBackground"
         android:configChanges="assetsPaths|uiMode"
-        android:exported="true">
-    </activity>
-
-    <activity android:name="com.android.wallpaper.picker.PassThroughCustomizationPickerActivity"
-        android:label="@string/app_name"
-        android:resizeableActivity="false"
-        android:theme="@style/WallpaperTheme.NoBackground"
         android:exported="true">
     </activity>
 

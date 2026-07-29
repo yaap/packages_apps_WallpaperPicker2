@@ -56,6 +56,8 @@
     <string name="start_rotation_progress_message" msgid="7872623873682262083">"Downloading first wallpaper…"</string>
     <string name="start_rotation_error_message" msgid="3053799836719618972">"Unable to download first wallpaper. Please check your network settings and try again."</string>
     <string name="start_rotation_dialog_body" msgid="7903554799046364916">"Wallpaper will change automatically every day"</string>
+    <string name="collapse_content_description" msgid="47845329734521980">"Collapse"</string>
+    <string name="expand_content_description" msgid="2422558308356416382">"Expand"</string>
     <string name="settings_button_label" msgid="8724734130079207955">"Settings"</string>
     <string name="explore" msgid="7468719504199497281">"Explore"</string>
     <string name="next_wallpaper" msgid="3911873152952596232">"Next wallpaper"</string>
@@ -118,6 +120,7 @@
     <string name="home_wallpaper_preview_card_content_description" msgid="4059418716070821630">"Home screen wallpaper preview"</string>
     <string name="collection_not_exist_msg" msgid="3504852962885064842">"The collection doesn\'t exist"</string>
     <string name="wallpaper_exit_split_screen" msgid="1928870664619591636">"Please exit split screen mode and try again"</string>
+    <string name="wallpaper_preview_error" msgid="8230796042388952229">"Unable to display wallpaper preview"</string>
     <string name="set_wallpaper_dialog_set_button" msgid="5760149969510325088">"Set"</string>
     <string name="cancel" msgid="4970902691067201584">"Cancel"</string>
     <string name="hide_ui_preview_text" msgid="6766076482511252295">"Hide UI preview"</string>
@@ -146,7 +149,7 @@
     <string name="reset_confirmation_dialog_title" msgid="3391905685838213712">"Reset changes?"</string>
     <string name="reset_confirmation_dialog_message" msgid="888669268626289603">"Your changes won\'t be saved"</string>
     <string name="more_wallpapers" msgid="8116268433411881705">"More wallpapers"</string>
-    <string name="view_all_wallpapers" msgid="1555854274767599522">"&gt;\nView all"</string>
+    <string name="view_all_wallpapers" msgid="4480657694212439906">"View all"</string>
     <string name="wallpapers" msgid="7133442512006469886">"Wallpapers"</string>
     <string name="recents_wallpaper_label" msgid="8653165542635660222">"%1$s, %2$d"</string>
     <string name="default_wallpaper_title" msgid="2541071182656978180">"Wallpaper"</string>

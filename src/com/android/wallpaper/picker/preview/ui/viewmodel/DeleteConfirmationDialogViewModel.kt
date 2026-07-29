@@ -16,13 +16,20 @@
 
 package com.android.wallpaper.picker.preview.ui.viewmodel
 
+import android.app.wallpaper.WallpaperDescription
 import android.content.Intent
 import android.net.Uri
 
-class DeleteConfirmationDialogViewModel(
+data class DeleteConfirmationDialogViewModel(
     val onDismiss: () -> Unit,
     // Delete intent for general live wallpapers. It is null for creative wallpapers.
     val liveWallpaperDeleteIntent: Intent?,
     // Delete URI for creative wallpapers only. It is null for non creative wallpapers.
     val creativeWallpaperDeleteUri: Uri?,
+    // the package name for the wallpaper
+    val wallpaperComponent: String,
+    // Wallpaper description for the wallpaper
+    val description: WallpaperDescription?,
+    // When the delete button in the confirmation dialog is clicked
+    val onDelete: (suspend () -> Unit)? = null,
 )

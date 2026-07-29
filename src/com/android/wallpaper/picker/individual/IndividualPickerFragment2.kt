@@ -51,7 +51,6 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.android.wallpaper.R
-import com.android.wallpaper.config.BaseFlags
 import com.android.wallpaper.model.Category
 import com.android.wallpaper.model.CategoryProvider
 import com.android.wallpaper.model.CategoryReceiver
@@ -71,8 +70,8 @@ import com.android.wallpaper.picker.StartRotationDialogFragment
 import com.android.wallpaper.picker.StartRotationErrorDialogFragment
 import com.android.wallpaper.picker.category.wrapper.WallpaperCategoryWrapper
 import com.android.wallpaper.picker.customization.shared.model.CategoryType
-import com.android.wallpaper.picker.customization.ui.CustomizationPickerActivity2.Companion.CUSTOMIZATION_PICKER_FRAGMENT_TAG
-import com.android.wallpaper.picker.customization.ui.CustomizationPickerFragment2
+import com.android.wallpaper.picker.customization.ui.CustomizationPickerActivity.Companion.CUSTOMIZATION_PICKER_FRAGMENT_TAG
+import com.android.wallpaper.picker.customization.ui.CustomizationPickerFragment
 import com.android.wallpaper.picker.customization.ui.binder.ColorUpdateBinder
 import com.android.wallpaper.picker.customization.ui.viewmodel.ColorUpdateViewModel
 import com.android.wallpaper.util.SizeCalculator
@@ -152,7 +151,6 @@ class IndividualPickerFragment2 :
     private var shouldReloadWallpapers = false
     private lateinit var categoryProvider: CategoryProvider
     private var appliedWallpaperIds: Set<String> = setOf()
-    private var isNewPickerUi = false
 
     private var refreshCreativeCategories: CategoryType? = null
 
@@ -171,7 +169,6 @@ class IndividualPickerFragment2 :
         wallpaperManager = WallpaperManager.getInstance(appContext)
         packageStatusNotifier = injector.getPackageStatusNotifier(appContext)
         wallpaperCategoryWrapper = injector.getWallpaperCategoryWrapper()
-        isNewPickerUi = BaseFlags.get().isNewPickerUi()
 
         refreshCreativeCategories =
             arguments?.getSerializable(ARG_CATEGORY_TYPE, CategoryType::class.java) as? CategoryType
@@ -270,7 +267,7 @@ class IndividualPickerFragment2 :
                 }
                 isWallpapersReceived = true
                 updateLoading()
-                val supportsUserCreated = category?.supportsUserCreatedWallpapers() == true
+                val supportsUserCreated = category?.supportsUserCreatedWallpapers(context) == true
                 val byGroup = fetchedWallpapers.groupBy { it.getGroupName(context) }.toMutableMap()
                 val appliedWallpaperIds =
                     getAppliedWallpaperIds().also { this.appliedWallpaperIds = it }
@@ -339,7 +336,11 @@ class IndividualPickerFragment2 :
         userCreatedWallpapers: MutableList<WallpaperInfo>,
     ) {
         wallpapers.map {
-            if (category?.supportsUserCreatedWallpapers() == true) {
+            if (
+                context?.let { unwrappedContext ->
+                    category?.supportsUserCreatedWallpapers(unwrappedContext)
+                } == true
+            ) {
                 userCreatedWallpapers.add(it)
             }
         }
@@ -463,28 +464,28 @@ class IndividualPickerFragment2 :
             setUpToolbarMenu(R.menu.individual_picker_menu)
         }
         setTitle(category?.title)
-        if (isNewPickerUi) {
-            ColorUpdateBinder.bind(
-                setColor = { _ ->
-                    // There is no way to programmatically set app:liftOnScrollColor in
-                    // AppBarLayout, therefore remove and re-add view to update colors based on new
-                    // context
-                    val contentParent = view.requireViewById<ViewGroup>(R.id.content_parent)
-                    val appBarLayout = view.requireViewById<AppBarLayout>(R.id.app_bar)
-                    contentParent.removeView(appBarLayout)
-                    layoutInflater.inflate(R.layout.section_header_content, contentParent, true)
-                    setUpToolbar(contentParent)
-                    if (isRotationEnabled()) {
-                        setUpToolbarMenu(R.menu.individual_picker_menu)
-                    }
-                    setTitle(category?.title)
-                    contentParent.requestApplyInsets()
-                },
-                color = colorUpdateViewModel.colorSurfaceContainer,
-                shouldAnimate = { false },
-                lifecycleOwner = viewLifecycleOwner,
-            )
-        }
+
+        ColorUpdateBinder.bind(
+            setColor = { _ ->
+                // There is no way to programmatically set app:liftOnScrollColor in
+                // AppBarLayout, therefore remove and re-add view to update colors based on new
+                // context
+                val contentParent = view.requireViewById<ViewGroup>(R.id.content_parent)
+                val appBarLayout = view.requireViewById<AppBarLayout>(R.id.app_bar)
+                contentParent.removeView(appBarLayout)
+                layoutInflater.inflate(R.layout.section_header_content, contentParent, true)
+                setUpToolbar(contentParent)
+                if (isRotationEnabled()) {
+                    setUpToolbarMenu(R.menu.individual_picker_menu)
+                }
+                setTitle(category?.title)
+                contentParent.requestApplyInsets()
+            },
+            color = colorUpdateViewModel.colorSurfaceContainer,
+            shouldAnimate = { false },
+            lifecycleOwner = viewLifecycleOwner,
+        )
+
         imageGrid = view.requireViewById<View>(R.id.wallpaper_grid) as RecyclerView
         loading = view.requireViewById(R.id.loading_indicator)
         updateLoading()
@@ -565,7 +566,9 @@ class IndividualPickerFragment2 :
     }
 
     private fun isFewerColumnLayout(): Boolean =
-        category?.supportsUserCreatedWallpapers() == false &&
+        context?.let { unwrappedContext ->
+            category?.supportsUserCreatedWallpapers(unwrappedContext)
+        } == false &&
             items.count { it is PickerItem.WallpaperItem } <= MAX_CAPACITY_IN_FEWER_COLUMN_LAYOUT
 
     private fun getGridItemPaddingHorizontal(): Int {
@@ -612,7 +615,6 @@ class IndividualPickerFragment2 :
                 imageGrid.paddingTop,
                 imageGrid.paddingBottom,
                 refreshCreativeCategories,
-                isNewPickerUi = isNewPickerUi,
                 colorUpdateViewModel = colorUpdateViewModel,
                 shouldAnimateColor = { false },
                 lifecycleOwner = viewLifecycleOwner,
@@ -750,7 +752,7 @@ class IndividualPickerFragment2 :
                                     .beginTransaction()
                                     .replace(
                                         R.id.fragment_container, // containerViewId
-                                        CustomizationPickerFragment2(), // fragment
+                                        CustomizationPickerFragment(), // fragment
                                         CUSTOMIZATION_PICKER_FRAGMENT_TAG, // tag
                                     )
                                     .commit()
@@ -770,29 +772,35 @@ class IndividualPickerFragment2 :
     }
 
     private fun showStartRotationErrorDialog(@NetworkPreference networkPreference: Int) {
-        val activity = activity as FragmentTransactionChecker?
-        if (activity != null) {
-            val startRotationErrorDialogFragment =
-                StartRotationErrorDialogFragment.newInstance(networkPreference)
-            startRotationErrorDialogFragment.setTargetFragment(
-                this@IndividualPickerFragment2,
-                UNUSED_REQUEST_CODE,
+        val activity = activity as? FragmentTransactionChecker
+        if (activity == null) {
+            Log.e(
+                TAG,
+                "Activity does not implement FragmentTransactionChecker, can't show error dialog",
             )
-            if (activity.isSafeToCommitFragmentTransaction) {
-                startRotationErrorDialogFragment.show(
-                    parentFragmentManager,
-                    TAG_START_ROTATION_ERROR_DIALOG,
-                )
-            } else {
-                stagedStartRotationErrorDialogFragment = startRotationErrorDialogFragment
-            }
+            return
+        }
+
+        val startRotationErrorDialogFragment =
+            StartRotationErrorDialogFragment.newInstance(networkPreference)
+        startRotationErrorDialogFragment.setTargetFragment(
+            this@IndividualPickerFragment2,
+            UNUSED_REQUEST_CODE,
+        )
+        if (activity.isSafeToCommitFragmentTransaction) {
+            startRotationErrorDialogFragment.show(
+                parentFragmentManager,
+                TAG_START_ROTATION_ERROR_DIALOG,
+            )
+        } else {
+            stagedStartRotationErrorDialogFragment = startRotationErrorDialogFragment
         }
     }
 
     private fun getNumColumns(): Int {
         val activity = this.activity ?: return 1
         return if (isFewerColumnLayout()) {
-            SizeCalculator.getNumFeaturedIndividualColumns(activity)
+            SizeCalculator.getNumFeaturedIndividualColumns()
         } else {
             SizeCalculator.getNumIndividualColumns(activity)
         }
@@ -876,7 +884,6 @@ class IndividualPickerFragment2 :
         private val bottomPadding: Int,
         private val topPadding: Int,
         private val refreshCreativeCategories: CategoryType?,
-        private val isNewPickerUi: Boolean,
         private val colorUpdateViewModel: ColorUpdateViewModel,
         private val shouldAnimateColor: () -> Boolean,
         private val lifecycleOwner: LifecycleOwner,
@@ -1000,14 +1007,14 @@ class IndividualPickerFragment2 :
             val view =
                 layoutInflater.inflate(R.layout.grid_item_header, parent, /* attachToRoot= */ false)
                     as TextView
-            if (isNewPickerUi) {
-                ColorUpdateBinder.bind(
-                    setColor = { color -> view.setTextColor(color) },
-                    color = colorUpdateViewModel.colorOnSurface,
-                    shouldAnimate = shouldAnimateColor,
-                    lifecycleOwner = lifecycleOwner,
-                )
-            }
+
+            ColorUpdateBinder.bind(
+                setColor = { color -> view.setTextColor(color) },
+                color = colorUpdateViewModel.colorOnSurface,
+                shouldAnimate = shouldAnimateColor,
+                lifecycleOwner = lifecycleOwner,
+            )
+
             var startPadding = view.paddingStart
             if (isCreativeCategory) {
                 startPadding += edgePadding

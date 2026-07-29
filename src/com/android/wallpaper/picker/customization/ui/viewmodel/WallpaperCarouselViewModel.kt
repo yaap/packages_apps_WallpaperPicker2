@@ -31,6 +31,7 @@ import com.android.wallpaper.picker.category.ui.viewmodel.TileViewModel
 import com.android.wallpaper.picker.customization.shared.model.CategoryType
 import com.android.wallpaper.picker.customization.ui.util.PhotoMediaUtils
 import com.android.wallpaper.picker.data.WallpaperModel
+import com.android.wallpaper.picker.data.category.CategoryModel
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -49,7 +50,7 @@ class WallpaperCarouselViewModel
 @AssistedInject
 constructor(
     @ApplicationContext context: Context,
-    curatedPhotosInteractor: CuratedPhotosInteractor,
+    private var curatedPhotosInteractor: CuratedPhotosInteractor,
     creativeCategoryInteractor: CreativeCategoryInteractor,
     onDeviceWallpapersInteractor: OnDeviceWallpapersInteractor,
     @Assisted private val viewModelScope: CoroutineScope,
@@ -59,37 +60,49 @@ constructor(
     private val _navigationEvents = MutableSharedFlow<NavigationEvent>()
     val navigationEvents = _navigationEvents.asSharedFlow()
 
+    fun refreshCuratedPhotos() {
+        curatedPhotosInteractor.refreshContent()
+    }
+
     val curatedPhotoCarouselItems: Flow<List<TileViewModel>> =
         curatedPhotosInteractor.category
             .distinctUntilChanged(PhotoMediaUtils.distinctMediaKeyChanged())
             .map { category ->
-                category.categoryModel.collectionCategoryData?.wallpaperModels?.withIndex()?.map {
-                    wallpaperModelWithIndex ->
-                    val staticWallpaperModel =
-                        wallpaperModelWithIndex.value as? WallpaperModel.StaticWallpaperModel
-                    val total = category.categoryModel.collectionCategoryData.wallpaperModels.size
+                category
+                    ?.categoryModel
+                    ?.collectionCategoryData
+                    ?.wallpaperModels
+                    ?.withIndex()
+                    ?.map { wallpaperModelWithIndex ->
+                        val staticWallpaperModel =
+                            wallpaperModelWithIndex.value as? WallpaperModel.StaticWallpaperModel
+                        val total =
+                            category.categoryModel.collectionCategoryData.wallpaperModels.size
 
-                    TileViewModel(
-                        defaultDrawable = null,
-                        thumbnailAsset =
-                            ContentUriAsset(context, staticWallpaperModel?.imageWallpaperData?.uri),
-                        text = category.categoryModel.commonCategoryData.title,
-                        showTitle = false,
-                        maxCategoriesInRow = SectionCardinality.Single,
-                        contentDescription =
-                            context.getString(
-                                R.string.carousel_content_description_photos,
-                                wallpaperModelWithIndex.index + 1,
-                                total,
-                            ),
-                    ) {
-                        navigateToPreviewScreen(
-                            wallpaperModelWithIndex.value,
-                            CategoryType.CuratedPhotos,
-                            SET_WALLPAPER_ENTRY_POINT_WALLPAPER_PREVIEW_SUGGESTED_PHOTOS_HOME_SCREEN,
-                        )
-                    }
-                } ?: emptyList()
+                        TileViewModel(
+                            defaultDrawable = null,
+                            thumbnailAsset =
+                                ContentUriAsset(
+                                    context,
+                                    staticWallpaperModel?.imageWallpaperData?.uri,
+                                ),
+                            text = category.categoryModel.commonCategoryData.title,
+                            showTitle = false,
+                            maxCategoriesInRow = SectionCardinality.Single,
+                            contentDescription =
+                                context.getString(
+                                    R.string.carousel_content_description_photos,
+                                    wallpaperModelWithIndex.index + 1,
+                                    total,
+                                ),
+                        ) {
+                            navigateToPreviewScreen(
+                                wallpaperModelWithIndex.value,
+                                CategoryType.CuratedPhotos,
+                                SET_WALLPAPER_ENTRY_POINT_WALLPAPER_PREVIEW_SUGGESTED_PHOTOS_HOME_SCREEN,
+                            )
+                        }
+                    } ?: emptyList()
             }
 
     /**
@@ -147,10 +160,7 @@ constructor(
                             CategoryType.CreativeCategories,
                         )
                     } else {
-                        navigateToWallpaperCollection(
-                            category.commonCategoryData.collectionId,
-                            CategoryType.CreativeCategories,
-                        )
+                        navigateToWallpaperCollection(category, CategoryType.CreativeCategories)
                     }
                 }
             }
@@ -188,7 +198,7 @@ constructor(
             creatives: List<TileViewModel>,
             standAlone: List<TileViewModel> ->
             val creativeCategories =
-                if (BaseFlags.get().isMagicPortraitEntryPointsEnabled()) {
+                if (BaseFlags.get(context).isMagicPortraitEntryPointsEnabled()) {
                     standAlone + creatives
                 } else {
                     creatives
@@ -233,10 +243,13 @@ constructor(
         }
     }
 
-    private fun navigateToWallpaperCollection(collectionId: String, categoryType: CategoryType) {
+    private fun navigateToWallpaperCollection(
+        categoryModel: CategoryModel,
+        categoryType: CategoryType,
+    ) {
         viewModelScope.launch {
             _navigationEvents.emit(
-                NavigationEvent.NavigateToWallpaperCollection(collectionId, categoryType)
+                NavigationEvent.NavigateToWallpaperCollection(categoryModel, categoryType)
             )
         }
     }
@@ -261,7 +274,7 @@ constructor(
         ) : NavigationEvent()
 
         data class NavigateToWallpaperCollection(
-            val categoryId: String,
+            val categoryModel: CategoryModel,
             val categoryType: CategoryType,
         ) : NavigationEvent()
 

@@ -48,23 +48,22 @@ import com.android.wallpaper.model.Screen
 import com.android.wallpaper.model.StaticWallpaperPrefMetadata
 import com.android.wallpaper.model.WallpaperInfo
 import com.android.wallpaper.model.WallpaperModelsPair
-import com.android.wallpaper.module.InjectorProvider
-import com.android.wallpaper.module.RecentWallpaperManager
 import com.android.wallpaper.module.WallpaperPreferences
 import com.android.wallpaper.module.logging.UserEventLogger
 import com.android.wallpaper.module.logging.UserEventLogger.SetWallpaperEntryPoint
+import com.android.wallpaper.picker.customization.shared.model.LegacyRecentWallpaperModel
 import com.android.wallpaper.picker.customization.shared.model.WallpaperDestination
 import com.android.wallpaper.picker.customization.shared.model.WallpaperDestination.BOTH
 import com.android.wallpaper.picker.customization.shared.model.WallpaperDestination.Companion.toDestinationInt
 import com.android.wallpaper.picker.customization.shared.model.WallpaperDestination.Companion.toSetWallpaperFlags
 import com.android.wallpaper.picker.customization.shared.model.WallpaperDestination.HOME
 import com.android.wallpaper.picker.customization.shared.model.WallpaperDestination.LOCK
-import com.android.wallpaper.picker.customization.shared.model.WallpaperModel as RecentWallpaperModel
 import com.android.wallpaper.picker.data.WallpaperModel.LiveWallpaperModel
 import com.android.wallpaper.picker.data.WallpaperModel.StaticWallpaperModel
 import com.android.wallpaper.picker.di.modules.BackgroundDispatcher
 import com.android.wallpaper.picker.preview.shared.model.FullPreviewCropModel
 import com.android.wallpaper.util.CurrentWallpaperInfoUtils.getCurrentWallpapers
+import com.android.wallpaper.util.CurrentWallpaperModelUtils
 import com.android.wallpaper.util.WallpaperCropUtils
 import com.android.wallpaper.util.converter.WallpaperModelFactory
 import com.android.wallpaper.util.toDescription
@@ -91,13 +90,12 @@ constructor(
     private val wallpaperPreferences: WallpaperPreferences,
     private val wallpaperModelFactory: WallpaperModelFactory,
     private val logger: UserEventLogger,
-    private val recentWallpaperManager: RecentWallpaperManager,
     @BackgroundDispatcher val backgroundScope: CoroutineScope,
 ) : WallpaperClient {
 
     private var recentsContentProviderAvailable: Boolean? = null
-    private val recentHomeWallpapers = MutableStateFlow<List<RecentWallpaperModel>?>(null)
-    private val recentLockWallpapers = MutableStateFlow<List<RecentWallpaperModel>?>(null)
+    private val recentHomeWallpapers = MutableStateFlow<List<LegacyRecentWallpaperModel>?>(null)
+    private val recentLockWallpapers = MutableStateFlow<List<LegacyRecentWallpaperModel>?>(null)
 
     init {
         backgroundScope.launch {
@@ -167,25 +165,15 @@ constructor(
                 fullPreviewCropModels?.let { cropModels ->
                     cropModels.mapValues { it.value.adjustCropForParallax(wallpaperSize) }
                 } ?: emptyMap()
+            val hash = "${BitmapUtils.generateHashCode(bitmap)}"
             val managerId =
-                if (BaseFlags.get().isRecentWallpapersFromSystemEnabled(context)) {
-                    val hash = "${BitmapUtils.generateHashCode(bitmap)}"
-                    wallpaperManager.setStaticWallpaperWithDescription(
-                        asset.getStreamOrFromBitmap(bitmap),
-                        bitmap,
-                        wallpaperModel.toDescription(hash, cropHintsWithParallax),
-                        destination,
-                        asset,
-                    )
-                } else {
-                    wallpaperManager.setStaticWallpaperWithCrops(
-                        asset.getStreamOrFromBitmap(bitmap),
-                        bitmap,
-                        cropHintsWithParallax,
-                        destination,
-                        asset,
-                    )
-                }
+                wallpaperManager.setStaticWallpaperWithDescription(
+                    asset.getStreamOrFromBitmap(bitmap),
+                    bitmap,
+                    wallpaperModel.toDescription(hash, cropHintsWithParallax),
+                    destination,
+                    asset,
+                )
 
             wallpaperPreferences.setStaticWallpaperMetadata(
                 metadata = wallpaperModel.getMetadata(bitmap, managerId),
@@ -203,14 +191,6 @@ constructor(
 
             // Save the static wallpaper to recent wallpapers
             // TODO(b/309138446): check if we can update recent with all cropHints from WM later
-            if (!BaseFlags.get().isRecentWallpapersFromSystemEnabled(context)) {
-                wallpaperPreferences.addStaticWallpaperToRecentWallpapers(
-                    destination,
-                    wallpaperModel,
-                    bitmap,
-                    cropHintsWithParallax,
-                )
-            }
         }
     }
 
@@ -355,10 +335,6 @@ constructor(
                 destination =
                     UserEventLogger.toWallpaperDestinationForLogging(destination.toDestinationInt()),
             )
-
-            if (!BaseFlags.get().isRecentWallpapersFromSystemEnabled(context)) {
-                wallpaperPreferences.addLiveWallpaperToRecentWallpapers(destination, wallpaperModel)
-            }
         }
     }
 
@@ -366,10 +342,7 @@ constructor(
         wallpaperModel: LiveWallpaperModel,
         destination: WallpaperDestination,
     ): Boolean {
-        val description =
-            if (BaseFlags.get().isRecentWallpapersFromSystemEnabled(context))
-                wallpaperModel.toDescription()
-            else wallpaperModel.liveWallpaperData.description
+        val description = wallpaperModel.toDescription()
         try {
             val method =
                 wallpaperManager.javaClass.getMethod(
@@ -494,7 +467,7 @@ constructor(
 
     private suspend fun queryRecentWallpapers(
         destination: WallpaperDestination
-    ): List<RecentWallpaperModel> =
+    ): List<LegacyRecentWallpaperModel> =
         if (!areRecentsAvailable()) {
             listOf(getCurrentWallpaperFromFactory(destination))
         } else {
@@ -503,7 +476,7 @@ constructor(
 
     private fun queryAllRecentWallpapers(
         destination: WallpaperDestination
-    ): List<RecentWallpaperModel> {
+    ): List<LegacyRecentWallpaperModel> {
         context.contentResolver
             .query(
                 LIST_RECENTS_URI.buildUpon().appendPath(destination.asString()).build(),
@@ -529,7 +502,7 @@ constructor(
                             if (titleColumnIndex > -1) cursor.getString(titleColumnIndex) else null
 
                         add(
-                            RecentWallpaperModel(
+                            LegacyRecentWallpaperModel(
                                 wallpaperId = wallpaperId,
                                 placeholderColor = placeholderColor,
                                 lastUpdated = lastUpdated,
@@ -543,13 +516,8 @@ constructor(
 
     private suspend fun getCurrentWallpaperFromFactory(
         destination: WallpaperDestination
-    ): RecentWallpaperModel {
-        val currentWallpapers =
-            getCurrentWallpapers(context, updateRecents = false, forceRefresh = false) {
-                info,
-                screen ->
-                recentWallpaperManager.getCurrentWallpaperBitmapUri(info, screen)
-            }
+    ): LegacyRecentWallpaperModel {
+        val currentWallpapers = getCurrentWallpapers(context, forceRefresh = false)
         val wallpaper: WallpaperInfo =
             if (destination == LOCK) {
                 currentWallpapers.second
@@ -558,7 +526,7 @@ constructor(
             }
         val colors = wallpaperManager.getWallpaperColors(destination.toSetWallpaperFlags())
 
-        return RecentWallpaperModel(
+        return LegacyRecentWallpaperModel(
             wallpaperId = wallpaper.wallpaperId,
             placeholderColor = colors?.primaryColor?.toArgb() ?: Color.TRANSPARENT,
             title = wallpaper.getTitle(context),
@@ -566,10 +534,13 @@ constructor(
     }
 
     override suspend fun getCurrentWallpaperModels(forceRefresh: Boolean): WallpaperModelsPair {
-        val currentWallpapers =
-            getCurrentWallpapers(context, updateRecents = false, forceRefresh) { info, screen ->
-                recentWallpaperManager.getCurrentWallpaperBitmapUri(info, screen)
-            }
+        if (BaseFlags.get(context).isRefactorWallpaperInfoFlag()) {
+            Log.d(TAG, "Using CurrentWallpaperModelUtils")
+            val currentWallpaperModels =
+                CurrentWallpaperModelUtils.getCurrentWallpaperModels(context)
+            return WallpaperModelsPair(currentWallpaperModels.first, currentWallpaperModels.second)
+        }
+        val currentWallpapers = getCurrentWallpapers(context, forceRefresh)
         val homeWallpaper = currentWallpapers.first
         val lockWallpaper = currentWallpapers.second
         return WallpaperModelsPair(
@@ -610,12 +581,7 @@ constructor(
                 )
             }
         } else {
-            val currentWallpapers =
-                getCurrentWallpapers(context, updateRecents = false, forceRefresh = false) {
-                    info,
-                    screen ->
-                    recentWallpaperManager.getCurrentWallpaperBitmapUri(info, screen)
-                }
+            val currentWallpapers = getCurrentWallpapers(context, forceRefresh = false)
             val wallpaper =
                 if (currentWallpapers.first.wallpaperId == wallpaperId) {
                     currentWallpapers.first
@@ -648,12 +614,11 @@ constructor(
     override fun getCurrentCropHints(
         displaySizes: List<Point>,
         @SetWallpaperFlags which: Int,
-    ): Map<Point, Rect>? {
-        val flags = InjectorProvider.getInjector().getFlags()
-        val cropHints: List<Rect>? =
+    ): Map<Point, Rect> {
+        val cropHints: List<Rect> =
             wallpaperManager.getBitmapCrops(displaySizes, which, /* originalBitmap= */ true)
 
-        return cropHints?.indices?.associate { displaySizes[it] to cropHints[it] }
+        return cropHints.indices.associate { displaySizes[it] to cropHints[it] }
     }
 
     override suspend fun getWallpaperColors(

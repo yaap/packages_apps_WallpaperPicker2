@@ -38,8 +38,10 @@ import kotlinx.coroutines.CancellableContinuation
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
@@ -47,6 +49,7 @@ import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.shareIn
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.suspendCancellableCoroutine
 
 /** View model for static wallpaper preview used in [WallpaperPreviewActivity] and its fragments */
@@ -96,10 +99,15 @@ constructor(
         interactor.wallpaperModel.map { it as? StaticWallpaperModel }.filterNotNull()
 
     /** Null indicates the wallpaper has no low res image. */
-    val lowResBitmap: Flow<Bitmap?> =
+    val lowResBitmap: StateFlow<Bitmap?> =
         staticWallpaperModel
             .map { it.staticWallpaperData.asset.getLowResBitmap(context) }
             .flowOn(bgDispatcher)
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(),
+                initialValue = null,
+            )
     // Asset detail includes the dimensions, bitmap and the asset.
     private val assetDetail: Flow<Triple<Point, Bitmap?, Asset>?> =
         interactor.wallpaperModel
@@ -114,8 +122,27 @@ constructor(
 
     var scaleAndCenter: FullResImageViewUtil.ScaleAndCenter? = null
 
+    private val forceEmitFullResWallpaperViewModel =
+        MutableSharedFlow<Unit>(replay = 1).also {
+            // Emit the initial signal so fullResWallpaperViewModel can fire the first time
+            it.tryEmit(Unit)
+        }
+
+    /**
+     * forceEmitFullResWallpaperViewModel is used to force to emit fullResWallpaperViewModel again.
+     * We need this since in full preview, users can pan and zoom the scaled image view and navigate
+     * back without confirming the crop. In this case, the scaled image view state is dirty and
+     * needs to be updated with the original fullResWallpaperViewModel.
+     */
+    fun forceEmitFullResWallpaperViewModel() {
+        forceEmitFullResWallpaperViewModel.tryEmit(Unit)
+    }
+
     val fullResWallpaperViewModel: Flow<FullResWallpaperViewModel?> =
-        combine(assetDetail, cropHintsInfo) { assetDetail, cropHintsInfo ->
+        combine(assetDetail, cropHintsInfo, forceEmitFullResWallpaperViewModel) {
+                assetDetail,
+                cropHintsInfo,
+                _ ->
                 if (assetDetail == null) {
                     null
                 } else {

@@ -39,6 +39,11 @@ constructor(
     @BackgroundDispatcher private val backgroundScope: CoroutineScope,
 ) : CategoryInteractor {
 
+    override val defaultRecentCategories: Flow<List<CategoryModel>> =
+        defaultWallpaperCategoryRepository.thirdPartyLiveWallpaperCategory.filter {
+            it.isNotEmpty()
+        }
+
     override val categories: Flow<List<CategoryModel>> =
         defaultWallpaperCategoryRepository.isDefaultCategoriesFetched
             .filter { it }
@@ -56,6 +61,10 @@ constructor(
             }
 
     override val isNetworkCategoriesNotEmpty: Flow<Boolean> = emptyFlow()
+
+    override fun fetchDelayedCategories() {
+        // No-op in AOSP
+    }
 
     override fun refreshDueToLocaleChange() {
         defaultWallpaperCategoryRepository.refreshDueToLocaleChange()

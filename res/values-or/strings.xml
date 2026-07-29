@@ -56,6 +56,8 @@
     <string name="start_rotation_progress_message" msgid="7872623873682262083">"ପ୍ରଥମ ୱାଲପେପର୍ ଡାଉନଲୋଡ୍ ହେଉଛି…"</string>
     <string name="start_rotation_error_message" msgid="3053799836719618972">"ପ୍ରଥମ ୱାଲପେପର୍‌କୁ ଡାଉନଲୋଡ୍ କରିବାରେ ଅସମର୍ଥ। ଦୟାକରି ଆପଣଙ୍କର ନେଟୱର୍କ ସେଟିଙ୍ଗକୁ ଯାଞ୍ଚ କରିବା ସହିତ ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ।"</string>
     <string name="start_rotation_dialog_body" msgid="7903554799046364916">"ସ୍ଵଚାଳିତ ଭାବେ ପ୍ରତିଦିନ ୱାଲପେପର୍ ପରିବର୍ତ୍ତନ ହେବ"</string>
+    <string name="collapse_content_description" msgid="47845329734521980">"ସଙ୍କୁଚିତ କରନ୍ତୁ"</string>
+    <string name="expand_content_description" msgid="2422558308356416382">"ବିସ୍ତାର କରନ୍ତୁ"</string>
     <string name="settings_button_label" msgid="8724734130079207955">"ସେଟିଂସ୍"</string>
     <string name="explore" msgid="7468719504199497281">"ଖୋଜନ୍ତୁ"</string>
     <string name="next_wallpaper" msgid="3911873152952596232">"ପରବର୍ତ୍ତୀ ୱାଲପେପର୍"</string>
@@ -118,6 +120,7 @@
     <string name="home_wallpaper_preview_card_content_description" msgid="4059418716070821630">"ହୋମ ସ୍କ୍ରିନ ୱାଲପେପରର ପ୍ରିଭ୍ୟୁ"</string>
     <string name="collection_not_exist_msg" msgid="3504852962885064842">"ସଂଗ୍ରହ ଉପଲବ୍ଧ ନାହିଁ"</string>
     <string name="wallpaper_exit_split_screen" msgid="1928870664619591636">"ଦୟାକରି ସ୍ପ୍ଲିଟ ସ୍କ୍ରିନ ମୋଡରୁ ବାହାରି ଯାଇ ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ"</string>
+    <string name="wallpaper_preview_error" msgid="8230796042388952229">"ୱାଲପେପର ପ୍ରିଭ୍ୟୁ ଡିସପ୍ଲେ କରିବାରେ ଅସମର୍ଥ"</string>
     <string name="set_wallpaper_dialog_set_button" msgid="5760149969510325088">"ସେଟ କରନ୍ତୁ"</string>
     <string name="cancel" msgid="4970902691067201584">"ବାତିଲ କରନ୍ତୁ"</string>
     <string name="hide_ui_preview_text" msgid="6766076482511252295">"UI ପ୍ରିଭ୍ୟୁକୁ ଲୁଚାନ୍ତୁ"</string>
@@ -146,7 +149,7 @@
     <string name="reset_confirmation_dialog_title" msgid="3391905685838213712">"ପରିବର୍ତ୍ତନଗୁଡ଼ିକୁ ରିସେଟ କରିବେ?"</string>
     <string name="reset_confirmation_dialog_message" msgid="888669268626289603">"ଆପଣଙ୍କର ପରିବର୍ତ୍ତନଗୁଡ଼ିକୁ ସେଭ କରାଯିବ ନାହିଁ"</string>
     <string name="more_wallpapers" msgid="8116268433411881705">"ଅଧିକ ୱାଲପେପର"</string>
-    <string name="view_all_wallpapers" msgid="1555854274767599522">"&gt;\nସବୁ ଭ୍ୟୁ କରନ୍ତୁ"</string>
+    <string name="view_all_wallpapers" msgid="4480657694212439906">"ସବୁ ଭ୍ୟୁ କରନ୍ତୁ"</string>
     <string name="wallpapers" msgid="7133442512006469886">"ୱାଲପେପର"</string>
     <string name="recents_wallpaper_label" msgid="8653165542635660222">"%1$s, %2$d"</string>
     <string name="default_wallpaper_title" msgid="2541071182656978180">"ୱାଲପେପର"</string>

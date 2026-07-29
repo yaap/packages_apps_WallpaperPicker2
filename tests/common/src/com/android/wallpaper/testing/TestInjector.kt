@@ -15,23 +15,15 @@
  */
 package com.android.wallpaper.testing
 
-import android.app.WallpaperColors
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import androidx.activity.ComponentActivity
-import androidx.lifecycle.LifecycleOwner
-import com.android.customization.model.color.DefaultWallpaperColorResources
-import com.android.customization.model.color.WallpaperColorResources
-import com.android.systemui.shared.customization.data.content.CustomizationProviderClient
-import com.android.wallpaper.config.BaseFlags
 import com.android.wallpaper.effects.EffectsController
 import com.android.wallpaper.model.CategoryProvider
 import com.android.wallpaper.model.InlinePreviewIntentFactory
 import com.android.wallpaper.module.AlarmManagerWrapper
 import com.android.wallpaper.module.BitmapCropper
 import com.android.wallpaper.module.CurrentWallpaperInfoFactory
-import com.android.wallpaper.module.CustomizationSections
 import com.android.wallpaper.module.DefaultLiveWallpaperInfoFactory
 import com.android.wallpaper.module.DrawableLayerResolver
 import com.android.wallpaper.module.ExploreIntentChecker
@@ -55,10 +47,7 @@ import com.android.wallpaper.picker.broadcast.BroadcastDispatcher
 import com.android.wallpaper.picker.category.wrapper.WallpaperCategoryWrapper
 import com.android.wallpaper.picker.customization.data.repository.WallpaperColorsRepository
 import com.android.wallpaper.picker.customization.domain.interactor.WallpaperInteractor
-import com.android.wallpaper.picker.customization.domain.interactor.WallpaperSnapshotRestorer
 import com.android.wallpaper.picker.individual.IndividualPickerFragment2
-import com.android.wallpaper.picker.undo.data.repository.UndoRepository
-import com.android.wallpaper.picker.undo.domain.interactor.UndoInteractor
 import com.android.wallpaper.util.DisplayUtils
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -67,6 +56,7 @@ import kotlinx.coroutines.Dispatchers
 
 /** Test implementation of [Injector] */
 @Singleton
+@Deprecated("Use Hilt instead, see b/459863716")
 open class TestInjector
 @Inject
 constructor(
@@ -88,17 +78,13 @@ constructor(
     private var alarmManagerWrapper: AlarmManagerWrapper? = null
     private var bitmapCropper: BitmapCropper? = null
     private var categoryProvider: CategoryProvider? = null
-    private var customizationSections: CustomizationSections? = null
     private var drawableLayerResolver: DrawableLayerResolver? = null
     private var exploreIntentChecker: ExploreIntentChecker? = null
     private var performanceMonitor: PerformanceMonitor? = null
     private var systemFeatureChecker: SystemFeatureChecker? = null
     private var wallpaperPersister: WallpaperPersister? = null
     private var wallpaperStatusChecker: WallpaperStatusChecker? = null
-    private var flags: BaseFlags? = null
-    private var undoInteractor: UndoInteractor? = null
     private var wallpaperInteractor: WallpaperInteractor? = null
-    private var wallpaperSnapshotRestorer: WallpaperSnapshotRestorer? = null
     private var wallpaperColorsRepository: WallpaperColorsRepository? = null
     private var previewActivityIntentFactory: InlinePreviewIntentFactory? = null
     private var viewOnlyPreviewActivityIntentFactory: InlinePreviewIntentFactory? = null
@@ -127,11 +113,6 @@ constructor(
 
     override fun getCurrentWallpaperInfoFactory(context: Context): CurrentWallpaperInfoFactory {
         return currentWallpaperInfoFactory
-    }
-
-    override fun getCustomizationSections(activity: ComponentActivity): CustomizationSections {
-        return customizationSections
-            ?: TestCustomizationSections().also { customizationSections = it }
     }
 
     override fun getDeepLinkRedirectIntent(context: Context, uri: Uri): Intent {
@@ -216,56 +197,8 @@ constructor(
             ?: TestWallpaperStatusChecker().also { wallpaperStatusChecker = it }
     }
 
-    override fun getFlags(): BaseFlags {
-        return flags
-            ?: object : BaseFlags() {
-                    override fun isWallpaperRestorerEnabled(): Boolean {
-                        return true
-                    }
-
-                    override fun isPageTransitionsFeatureEnabled(context: Context): Boolean {
-                        return true
-                    }
-
-                    override fun getCachedFlags(
-                        context: Context
-                    ): List<CustomizationProviderClient.Flag> {
-                        return listOf()
-                    }
-                }
-                .also { flags = it }
-    }
-
-    override fun getUndoInteractor(
-        context: Context,
-        lifecycleOwner: LifecycleOwner,
-    ): UndoInteractor {
-        return undoInteractor
-            ?: UndoInteractor(
-                getApplicationCoroutineScope(),
-                UndoRepository(),
-                HashMap(),
-            ) // Empty because we don't support undoing in WallpaperPicker2..also{}
-    }
-
     override fun getWallpaperInteractor(context: Context): WallpaperInteractor {
         return injectedWallpaperInteractor
-    }
-
-    override fun getWallpaperSnapshotRestorer(context: Context): WallpaperSnapshotRestorer {
-        return wallpaperSnapshotRestorer
-            ?: WallpaperSnapshotRestorer(
-                    scope = getApplicationCoroutineScope(),
-                    interactor = getWallpaperInteractor(context),
-                )
-                .also { wallpaperSnapshotRestorer = it }
-    }
-
-    override fun getWallpaperColorResources(
-        wallpaperColors: WallpaperColors,
-        context: Context,
-    ): WallpaperColorResources {
-        return DefaultWallpaperColorResources(wallpaperColors)
     }
 
     override fun getWallpaperColorsRepository(): WallpaperColorsRepository {

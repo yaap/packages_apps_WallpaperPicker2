@@ -15,37 +15,46 @@
  */
 package com.android.wallpaper.config
 
-import android.app.Flags.updateRecentsFromSystem
-import android.app.WallpaperManager
 import android.content.Context
-import com.android.systemui.shared.Flags.clockReactiveVariants
+import android.server.Flags.enableThemeService
 import com.android.systemui.shared.Flags.extendedWallpaperEffects
 import com.android.systemui.shared.Flags.extendibleThemeManager
-import com.android.systemui.shared.Flags.lockscreenCustomClocks
-import com.android.systemui.shared.Flags.newCustomizationPickerUi
+import com.android.systemui.shared.Flags.workspaceItemsLabelHidden
 import com.android.systemui.shared.customization.data.content.CustomizationProviderClient
 import com.android.systemui.shared.customization.data.content.CustomizationProviderClientImpl
 import com.android.systemui.shared.customization.data.content.CustomizationProviderContract as Contract
 import com.android.wallpaper.Flags.adaptiveWallpaperFlag
+import com.android.wallpaper.Flags.collapsableReorderedAiWallpapersScreen
 import com.android.wallpaper.Flags.colorPickerUpdateFlag
 import com.android.wallpaper.Flags.composeRefactorFlag
 import com.android.wallpaper.Flags.creativeWallpaperFieldCollectionWallpaper
-import com.android.wallpaper.Flags.desktopUiFlag
+import com.android.wallpaper.Flags.enableAiClocks
+import com.android.wallpaper.Flags.enableAndroidPhotopicker
 import com.android.wallpaper.Flags.enablePackThemeEntry
+import com.android.wallpaper.Flags.enableRecentWallpaperDeletion
+import com.android.wallpaper.Flags.enableRecentsDeletionViaProvider
 import com.android.wallpaper.Flags.fullscreenPreviewFlag
+import com.android.wallpaper.Flags.fullscreenPreviewFlowFix
 import com.android.wallpaper.Flags.newCreativeWallpaperCategory
+import com.android.wallpaper.Flags.proactiveSuggestions
 import com.android.wallpaper.Flags.refactorIndividualPickerFlag
+import com.android.wallpaper.Flags.refactorWallpaperInfoFlag
 import com.android.wallpaper.Flags.refactorWallpaperPreviewScreenFlag
 import com.android.wallpaper.Flags.wallpaperRestorerFlag
 import com.android.wallpaper.R
-import com.android.wallpaper.module.InjectorProvider
 import com.android.wm.shell.shared.desktopmode.DesktopState
+import dagger.hilt.EntryPoint
+import dagger.hilt.EntryPoints
+import dagger.hilt.InstallIn
+import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 
 abstract class BaseFlags {
     private var customizationProviderClient: CustomizationProviderClient? = null
     private var cachedFlags: List<CustomizationProviderClient.Flag>? = null
+
+    open fun isAiClocksEnabled() = enableAiClocks()
 
     // local flag to gate the entry points for magic portrait
     open fun isMagicPortraitEntryPointsEnabled() = true
@@ -57,6 +66,12 @@ abstract class BaseFlags {
     open fun isWallpaperEffectModelDownloadEnabled() = true
 
     open fun isInterruptModelDownloadEnabled() = false
+
+    open fun isCollabsableSectionInAiEnabled() = collapsableReorderedAiWallpapersScreen()
+
+    open fun isEnableRecentWallpaperDeletion() = enableRecentWallpaperDeletion()
+
+    open fun isEnableRecentsDeletionViaProvider() = enableRecentsDeletionViaProvider()
 
     // local flag to enable the refactored version of IPF2
     open fun isWallpapersFragmentEnabled() = refactorIndividualPickerFlag()
@@ -72,24 +87,28 @@ abstract class BaseFlags {
 
     open fun isExtendibleThemeManager() = extendibleThemeManager()
 
-    open fun isNewPickerUi() = newCustomizationPickerUi()
-
-    open fun isClockReactiveVariantsEnabled() = clockReactiveVariants()
-
     open fun isComposeRefactorEnabled() = composeRefactorFlag()
 
     open fun isColorPickerUpdateEnabled() = colorPickerUpdateFlag()
 
     // Local flag to gate Compose UI under the colorPickerUpdateFlag
-    open fun isColorPickerComposeEnabled() = false
+    open fun isColorPickerComposeEnabled() = true
 
-    open fun isAdaptiveWallpaperEnabled() = adaptiveWallpaperFlag()
+    open fun isThemeServiceEnabled() = enableThemeService()
 
     open fun isRefactorWallpaperPreviewScreenEnabled() = refactorWallpaperPreviewScreenFlag()
+
+    open fun isRefactorWallpaperInfoFlag() = refactorWallpaperInfoFlag()
+
+    open fun isEnableAndroidPhotoPicker() = enableAndroidPhotopicker()
 
     // This is just a local flag in order to ensure right behaviour in case
     // something goes wrong with PhotoPicker integration.
     open fun isPhotoPickerEnabled() = true
+
+    // This flag is to gate the dependency of default recents on new categories
+    // fetching logic.
+    open fun isRefactorWallpaperDefaults() = false
 
     open fun isKeyguardQuickAffordanceEnabled(context: Context): Boolean {
         return getCachedFlags(context)
@@ -98,15 +117,6 @@ abstract class BaseFlags {
                     Contract.FlagsTable.FLAG_NAME_CUSTOM_LOCK_SCREEN_QUICK_AFFORDANCES_ENABLED
             }
             ?.value == true
-    }
-
-    open fun isCustomClocksEnabled(context: Context): Boolean {
-        return lockscreenCustomClocks() ||
-            getCachedFlags(context)
-                .firstOrNull { flag ->
-                    flag.name == Contract.FlagsTable.FLAG_NAME_CUSTOM_CLOCKS_ENABLED
-                }
-                ?.value == true
     }
 
     /**
@@ -151,35 +161,43 @@ abstract class BaseFlags {
     }
 
     open fun isFullscreenPreviewEnabled(context: Context): Boolean {
-        return fullscreenPreviewFlag() &&
-            isNewPickerUi() &&
-            DesktopState.fromContext(context).canEnterDesktopMode
+        return fullscreenPreviewFlag() && DesktopState.fromContext(context).canEnterDesktopMode
     }
 
-    open fun isRecentWallpapersFromSystemEnabled(context: Context): Boolean {
-        val wallpaperManager = context.getSystemService(WallpaperManager::class.java)
-        try {
-            wallpaperManager.javaClass.getMethod(
-                "getWallpaperInstance",
-                Int::class.javaPrimitiveType,
-            )
-            return updateRecentsFromSystem()
-        } catch (e: NoSuchMethodException) {
-            return false
-        }
+    open fun isFullscreenPreviewFlowFixEnabled(context: Context): Boolean {
+        return fullscreenPreviewFlowFix() && isFullscreenPreviewEnabled(context)
     }
 
     open fun shouldShowDesktopUi(context: Context): Boolean {
         // TODO: b/416024080 use a better solution than a config boolean to show desktop UI.
-        return desktopUiFlag() &&
-            isNewPickerUi() &&
-            context.resources.getBoolean(R.bool.isDesktopUi)
+        return context.resources.getBoolean(R.bool.isDesktopUi)
+    }
+
+    open fun isAdaptiveWallpaperEnabled(context: Context): Boolean {
+        return adaptiveWallpaperFlag() &&
+            context.resources.getBoolean(R.bool.isAdaptiveWallpaperSupported)
+    }
+
+    open fun isDesktopSpecificWallpaperCollectionsEnabled() = false
+
+    open fun isHideAppLabelEnabled(): Boolean = workspaceItemsLabelHidden()
+
+    open fun isProactiveSuggestionsEnabled(): Boolean = proactiveSuggestions()
+
+    @EntryPoint
+    @InstallIn(SingletonComponent::class)
+    interface BaseFlagsEntryPointInjector {
+        fun getBaseFlags(): BaseFlags
     }
 
     companion object {
         @JvmStatic
-        fun get(): BaseFlags {
-            return InjectorProvider.getInjector().getFlags()
+        fun get(context: Context): BaseFlags {
+            return EntryPoints.get(
+                    context.applicationContext,
+                    BaseFlagsEntryPointInjector::class.java,
+                )
+                .getBaseFlags()
         }
     }
 }

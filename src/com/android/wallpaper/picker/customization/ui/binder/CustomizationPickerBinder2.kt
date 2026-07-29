@@ -32,7 +32,7 @@ import com.android.wallpaper.model.Screen.HOME_SCREEN
 import com.android.wallpaper.model.Screen.LOCK_SCREEN
 import com.android.wallpaper.module.logging.UserEventLogger
 import com.android.wallpaper.picker.customization.shared.model.CategoryType
-import com.android.wallpaper.picker.customization.ui.CustomizationPickerActivity2
+import com.android.wallpaper.picker.customization.ui.CustomizationPickerActivity
 import com.android.wallpaper.picker.customization.ui.util.CustomizationOptionUtil.CustomizationOption
 import com.android.wallpaper.picker.customization.ui.view.PackThemeSuggestedChip
 import com.android.wallpaper.picker.customization.ui.viewmodel.ColorUpdateViewModel
@@ -41,15 +41,16 @@ import com.android.wallpaper.picker.customization.ui.viewmodel.CustomizationPick
 import com.android.wallpaper.picker.customization.ui.viewmodel.CustomizationPickerViewModel2.PickerScreen.CUSTOMIZATION_OPTION
 import com.android.wallpaper.picker.customization.ui.viewmodel.CustomizationPickerViewModel2.PickerScreen.MAIN
 import com.android.wallpaper.picker.data.WallpaperModel
+import com.android.wallpaper.picker.data.category.CategoryModel
 import com.android.wallpaper.picker.preview.ui.view.ClickableMotionLayout
 import com.android.wallpaper.util.CuratedPhotosTimeUtil
 import kotlinx.coroutines.launch
 
 object CustomizationPickerBinder2 {
     /**
-     * @return Callback for the [CustomizationPickerActivity2] to set
+     * @return Callback for the [CustomizationPickerActivity] to set
      *   [CustomizationPickerViewModel2]'s screen state to null, which infers to the main screen. We
-     *   need this callback to handle the back navigation in [CustomizationPickerActivity2].
+     *   need this callback to handle the back navigation in [CustomizationPickerActivity].
      */
     fun bind(
         customizationOptionsData: CustomizationOptionsData,
@@ -72,7 +73,7 @@ object CustomizationPickerBinder2 {
         navigateToPackThemeActivity: (Intent) -> Unit,
         navigateToScreenSaverSettingsActivity: () -> Unit,
         navigateToWallpaperCollectionScreen:
-            ((collectionId: String, categoryType: CategoryType) -> Unit)?,
+            ((categoryModel: CategoryModel, categoryType: CategoryType) -> Unit)?,
         navigateToExtendedWallpaperEffects: (() -> Unit)?,
         packThemeSuggestedChip: PackThemeSuggestedChip?,
         packThemeSuggestedEntryBinder: PackThemeSuggestedEntryBinder,
@@ -103,38 +104,8 @@ object CustomizationPickerBinder2 {
                         when (screen) {
                             MAIN -> {
                                 navigateToPrimary()
-                                // setting the visibility of the home and lock labels
-                                val lockPreviewLabel: View =
-                                    previewPager.requireViewById(R.id.lock_preview_label)
-                                lockPreviewLabel.visibility = View.VISIBLE
-                                val homePreviewLabel: View =
-                                    previewPager.requireViewById(R.id.home_preview_label)
-                                homePreviewLabel.visibility = View.VISIBLE
-                                if (BaseFlags.get().shouldShowDesktopUi(view.context)) {
-                                    previewPager.addClickableViewId(R.id.home_preview_label)
-                                    previewPager.addClickableViewId(R.id.lock_preview_label)
-                                    lockPreviewLabel.setOnClickListener {
-                                        viewModel.selectPreviewScreen(LOCK_SCREEN)
-                                    }
-                                    homePreviewLabel.setOnClickListener {
-                                        viewModel.selectPreviewScreen(HOME_SCREEN)
-                                    }
-                                }
                             }
                             CUSTOMIZATION_OPTION -> {
-                                val lockPreviewLabel: View =
-                                    previewPager.requireViewById(R.id.lock_preview_label)
-                                // setting the visibility of the home and lock labels
-                                lockPreviewLabel.visibility = View.GONE
-                                val homePreviewLabel: View =
-                                    previewPager.requireViewById(R.id.home_preview_label)
-                                homePreviewLabel.visibility = View.GONE
-                                if (BaseFlags.get().shouldShowDesktopUi(view.context)) {
-                                    previewPager.removeClickableViewId(R.id.home_preview_label)
-                                    previewPager.removeClickableViewId(R.id.lock_preview_label)
-                                    lockPreviewLabel.setOnClickListener(null)
-                                    homePreviewLabel.setOnClickListener(null)
-                                }
                                 option?.let(navigateToSecondary)
                             }
                         }
@@ -164,7 +135,7 @@ object CustomizationPickerBinder2 {
             }
         }
 
-        if (BaseFlags.get().isPackThemeEnabled()) {
+        if (BaseFlags.get(view.context).isPackThemeEnabled()) {
             packThemeSuggestedChip?.let {
                 packThemeSuggestedEntryBinder.bind(
                     view = it,

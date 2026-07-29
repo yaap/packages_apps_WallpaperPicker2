@@ -35,11 +35,11 @@
     <string name="creative_wallpaper_title" msgid="3581650238648981372">"ልጣፍ ይፍጠሩ"</string>
     <string name="wallpaper_studio_title" msgid="4521517442580329214">"የልጣፍ ስቱዲዮ"</string>
     <string name="home_screen_message" msgid="106444102822522813">"መነሻ ገፅ"</string>
-    <string name="lock_screen_message" msgid="1534506081955058013">"ማያ ገፅ ቁልፍ"</string>
+    <string name="lock_screen_message" msgid="1534506081955058013">"ማያ ገጽ ቁልፍ"</string>
     <string name="home_and_lock_short_label" msgid="2937922943541927983">"መነሻ እና ቁልፍ"</string>
     <string name="set_wallpaper_dialog_message" msgid="2110475703996853076">"እንደ ልጣፍ ያቀናብሩ"</string>
     <string name="set_wallpaper_home_screen_destination" msgid="7315594722013109354">"መነሻ ገፅ"</string>
-    <string name="set_wallpaper_lock_screen_destination" msgid="6224685559375417945">"ማያ ገፅ ቁልፍ"</string>
+    <string name="set_wallpaper_lock_screen_destination" msgid="6224685559375417945">"ማያ ገጽ ቁልፍ"</string>
     <string name="set_wallpaper_both_destination" msgid="2536004558738350775">"የመነሻ እና ማያ ገፅ ቁልፎች"</string>
     <string name="no_backup_image_wallpaper_label" msgid="6316627676107284851">"የምስል ልጣፍን በማሽከርከር ላይ"</string>
     <string name="permission_needed_explanation" msgid="139166837541426823">"የአሁኑን ልጣፍ ለማሳየት <xliff:g id="APP_NAME">%1$s</xliff:g> የመሣሪያዎ ማከማቻ መዳረሻ ያስፈልገዋል።"</string>
@@ -56,6 +56,8 @@
     <string name="start_rotation_progress_message" msgid="7872623873682262083">"የመጀመሪያ ልጣፍን በማውረድ ላይ…"</string>
     <string name="start_rotation_error_message" msgid="3053799836719618972">"የመጀመሪያውን ልጣፍ ማውረድ አልተቻለም። እባክዎ የአውታረ መረብ ቅንብሮችዎን ይፈትሹና እንደገና ይሞክሩ።"</string>
     <string name="start_rotation_dialog_body" msgid="7903554799046364916">"ልጣፍ በየቀኑ በራስ-ሰር ይቀየራል"</string>
+    <string name="collapse_content_description" msgid="47845329734521980">"ሰብስብ"</string>
+    <string name="expand_content_description" msgid="2422558308356416382">"ዘርጋ"</string>
     <string name="settings_button_label" msgid="8724734130079207955">"ቅንብሮች"</string>
     <string name="explore" msgid="7468719504199497281">"አስስ"</string>
     <string name="next_wallpaper" msgid="3911873152952596232">"ቀጣይ ልጣፍ"</string>
@@ -118,6 +120,7 @@
     <string name="home_wallpaper_preview_card_content_description" msgid="4059418716070821630">"የመነሻ ማያ ገጽ ልጣፍ ቅድመ ዕይታ"</string>
     <string name="collection_not_exist_msg" msgid="3504852962885064842">"ስብስቡ የለም"</string>
     <string name="wallpaper_exit_split_screen" msgid="1928870664619591636">"እባክዎ ከየተከፈለ ማያ ገጽ ሁነታ ይውጡ እና እንደገና ይሞክሩ"</string>
+    <string name="wallpaper_preview_error" msgid="8230796042388952229">"የልጣፍ ቅድመ ዕይታን ማሳየት አልተቻለም"</string>
     <string name="set_wallpaper_dialog_set_button" msgid="5760149969510325088">"አዋቅር"</string>
     <string name="cancel" msgid="4970902691067201584">"ይቅር"</string>
     <string name="hide_ui_preview_text" msgid="6766076482511252295">"የዩአይ ቅድመ-ዕይታን ደብቅ"</string>
@@ -140,13 +143,13 @@
     <string name="settings_snackbar_description" msgid="890168814524778486">"እባክዎ በቅንብሮች ውስጥ ፋይሎችን እና ሚዲያን ያንቁ።"</string>
     <string name="settings_snackbar_enable" msgid="5992112808061426068">"አንቃ"</string>
     <string name="open_my_photos" msgid="4107196465713868381">"የእኔ ፎቶዎችን ክፈት"</string>
-    <string name="lock_screen_tab" msgid="6672930765010407652">"ማያ ገፅ ቁልፍ"</string>
-    <string name="home_screen_tab" msgid="1080445697837877526">"መነሻ ማያ ገፅ"</string>
+    <string name="lock_screen_tab" msgid="6672930765010407652">"ማያ ገጽ ቁልፍ"</string>
+    <string name="home_screen_tab" msgid="1080445697837877526">"መነሻ ማያ ገጽ"</string>
     <string name="reset" msgid="4945445169532850631">"ዳግም አስጀምር"</string>
     <string name="reset_confirmation_dialog_title" msgid="3391905685838213712">"ለውጦች ዳግም ይጀመሩ?"</string>
     <string name="reset_confirmation_dialog_message" msgid="888669268626289603">"የእርስዎ ለውጦች አይቀመጡም"</string>
     <string name="more_wallpapers" msgid="8116268433411881705">"ተጨማሪ ልጣፎች"</string>
-    <string name="view_all_wallpapers" msgid="1555854274767599522">"&gt;\nሁሉንም አሳይ"</string>
+    <string name="view_all_wallpapers" msgid="4480657694212439906">"ሁሉንም አሳይ"</string>
     <string name="wallpapers" msgid="7133442512006469886">"ልጣፎች"</string>
     <string name="recents_wallpaper_label" msgid="8653165542635660222">"%1$s፣ %2$d"</string>
     <string name="default_wallpaper_title" msgid="2541071182656978180">"ልጣፍ"</string>

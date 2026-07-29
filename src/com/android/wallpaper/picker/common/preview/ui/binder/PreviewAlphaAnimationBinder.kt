@@ -23,8 +23,12 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.android.wallpaper.R
+import com.android.wallpaper.config.BaseFlags
+import com.android.wallpaper.model.Screen.HOME_SCREEN
+import com.android.wallpaper.model.Screen.LOCK_SCREEN
 import com.android.wallpaper.picker.customization.ui.util.ViewAlphaAnimator.animateToAlpha
 import com.android.wallpaper.picker.customization.ui.viewmodel.CustomizationPickerViewModel2
+import com.android.wallpaper.picker.preview.ui.view.ClickableMotionLayout
 import kotlinx.coroutines.launch
 
 /**
@@ -35,41 +39,85 @@ import kotlinx.coroutines.launch
 object PreviewAlphaAnimationBinder {
 
     fun bind(
-        previewPager: View,
+        previewPager: ClickableMotionLayout,
         viewModel: CustomizationPickerViewModel2,
         lifecycleOwner: LifecycleOwner,
     ) {
         val lockPreview: View = previewPager.requireViewById(R.id.lock_preview)
         val lockPreviewLabel: TextView = previewPager.requireViewById(R.id.lock_preview_label)
+        val lockPreviewLabelContainer: View =
+            previewPager.requireViewById(R.id.lock_preview_label_container)
         val lockPreviewShade: View = lockPreview.requireViewById(R.id.preview_shade)
         val homePreview: View = previewPager.requireViewById(R.id.home_preview)
         val homePreviewLabel: TextView = previewPager.requireViewById(R.id.home_preview_label)
+        val homePreviewLabelContainer: View =
+            previewPager.requireViewById(R.id.home_preview_label_container)
         val homePreviewShade: View = homePreview.requireViewById(R.id.preview_shade)
+        val showDesktopUi =
+            BaseFlags.get(previewPager.context).shouldShowDesktopUi(previewPager.context)
 
         lifecycleOwner.lifecycleScope.launch {
             lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 launch {
-                    viewModel.lockPreviewAlpha.collect { (alpha, shouldAnimate) ->
+                    viewModel.lockPreviewAlpha.collect { (alpha, showLabel, shouldAnimate) ->
                         val shadeAlpha = 1 - alpha
+                        val labelAlpha = if (showLabel) alpha else 0f
+                        val labelVisibility = if (showLabel) View.VISIBLE else View.GONE
+                        if (showDesktopUi) {
+                            if (showLabel) {
+                                previewPager.addClickableViewId(R.id.lock_preview_label_container)
+                                lockPreviewLabelContainer.setOnClickListener {
+                                    viewModel.selectPreviewScreen(LOCK_SCREEN)
+                                }
+                            } else {
+                                previewPager.removeClickableViewId(
+                                    R.id.lock_preview_label_container
+                                )
+                                lockPreviewLabelContainer.setOnClickListener(null)
+                            }
+                        }
                         if (shouldAnimate) {
-                            lockPreviewLabel.animateToAlpha(alpha)
+                            lockPreviewLabelContainer.visibility = View.VISIBLE
+                            lockPreviewLabelContainer.animateToAlpha(labelAlpha) {
+                                lockPreviewLabelContainer.visibility = labelVisibility
+                            }
                             lockPreviewShade.animateToAlpha(shadeAlpha)
                         } else {
-                            lockPreviewLabel.alpha = alpha
+                            lockPreviewLabelContainer.alpha = labelAlpha
                             lockPreviewShade.alpha = shadeAlpha
+                            lockPreviewLabelContainer.visibility = labelVisibility
                         }
                     }
                 }
 
                 launch {
-                    viewModel.homePreviewAlpha.collect { (alpha, shouldAnimate) ->
+                    viewModel.homePreviewAlpha.collect { (alpha, showLabel, shouldAnimate) ->
                         val shadeAlpha = 1 - alpha
+                        val labelAlpha = if (showLabel) alpha else 0f
+                        val labelVisibility = if (showLabel) View.VISIBLE else View.GONE
+                        if (showDesktopUi) {
+                            if (showLabel) {
+                                previewPager.addClickableViewId(R.id.home_preview_label_container)
+                                homePreviewLabelContainer.setOnClickListener {
+                                    viewModel.selectPreviewScreen(HOME_SCREEN)
+                                }
+                            } else {
+                                previewPager.removeClickableViewId(
+                                    R.id.home_preview_label_container
+                                )
+                                homePreviewLabelContainer.setOnClickListener(null)
+                            }
+                        }
                         if (shouldAnimate) {
-                            homePreviewLabel.animateToAlpha(alpha)
+                            homePreviewLabelContainer.visibility = View.VISIBLE
+                            homePreviewLabelContainer.animateToAlpha(labelAlpha) {
+                                homePreviewLabelContainer.visibility = labelVisibility
+                            }
                             homePreviewShade.animateToAlpha(shadeAlpha)
                         } else {
-                            homePreviewLabel.alpha = alpha
+                            homePreviewLabelContainer.alpha = labelAlpha
                             homePreviewShade.alpha = shadeAlpha
+                            homePreviewLabelContainer.visibility = labelVisibility
                         }
                     }
                 }

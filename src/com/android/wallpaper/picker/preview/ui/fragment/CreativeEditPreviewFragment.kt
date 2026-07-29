@@ -32,6 +32,7 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.android.wallpaper.R
+import com.android.wallpaper.config.BaseFlags
 import com.android.wallpaper.model.WallpaperInfoContract
 import com.android.wallpaper.picker.AppbarFragment
 import com.android.wallpaper.picker.data.WallpaperModel.LiveWallpaperModel
@@ -108,12 +109,26 @@ class CreativeEditPreviewFragment : Hilt_CreativeEditPreviewFragment() {
                     // otherwise.
                     if (it.resultCode == RESULT_OK) {
                         updatePreview(it.resultCode, it.data)
-                        // When clicking on the check button, navigate to the small preview
-                        // fragment.
-                        findNavController()
-                            .navigate(
-                                R.id.action_creativeEditPreviewFragment_to_smallPreviewFragment
-                            )
+                        if (
+                            context?.let { unwrappedContext ->
+                                BaseFlags.get(unwrappedContext)
+                                    .isRefactorWallpaperPreviewScreenEnabled()
+                            } == true
+                        ) {
+                            // When clicking on the check button, navigate to the preview fragment.
+                            findNavController()
+                                .navigate(
+                                    R.id
+                                        .action_creativeEditPreviewFragment_to_wallpaperPreviewFragment
+                                )
+                        } else {
+                            // When clicking on the check button, navigate to the small preview
+                            // fragment.
+                            findNavController()
+                                .navigate(
+                                    R.id.action_creativeEditPreviewFragment_to_smallPreviewFragment
+                                )
+                        }
                     } else {
                         activity?.finish()
                     }
