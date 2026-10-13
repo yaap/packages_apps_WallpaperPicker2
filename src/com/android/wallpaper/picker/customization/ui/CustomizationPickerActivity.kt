@@ -16,6 +16,7 @@
 
 package com.android.wallpaper.picker.customization.ui
 
+import android.annotation.SuppressLint
 import android.annotation.TargetApi
 import android.app.ComponentCaller
 import android.content.Intent
@@ -82,6 +83,7 @@ class CustomizationPickerActivity :
     @Inject lateinit var logger: UserEventLogger
 
     private var configuration: Configuration? = null
+    private var fontFamilies: Pair<String, String>? = null
     private val categoriesViewModel: CategoriesViewModel by viewModels()
     private var isInitialCreation = true
 
@@ -125,6 +127,7 @@ class CustomizationPickerActivity :
         }
         categoriesViewModel.initialize()
         configuration = Configuration(resources.configuration)
+        fontFamilies = getFontFamilies()
         colorUpdateViewModel.updateDarkModeAndColors()
         colorUpdateViewModel.setPreviewEnabled(!displayUtils.isLargeScreenOrUnfoldedDisplay(this))
 
@@ -211,31 +214,49 @@ class CustomizationPickerActivity :
                 colorUpdateViewModel.updateDarkModeAndColors()
             } else if (isAssetsPathsChange) {
                 colorUpdateViewModel.updateColors()
-            } else if (isScreenSizeChange) {
-                val fragment =
-                    supportFragmentManager.findFragmentByTag(CUSTOMIZATION_PICKER_FRAGMENT_TAG)
-                if (fragment is CustomizationPickerFragment && fragment.isAdded) {
-                    // Manually trigger CustomizationPickerFragment2 recreation to refresh the UI.
-                    // Since this Activity handles configuration changes manually, the Fragment's
-                    // view hierarchy isn't automatically destroyed. We must force a remove/add
-                    // cycle to trigger onCreateView, ensuring the wallpaper preview and other
-                    // UI elements recalculate their dimensions for the new screen size.
-                    val savedState = supportFragmentManager.saveFragmentInstanceState(fragment)
-                    supportFragmentManager.beginTransaction().remove(fragment).commitNow()
-                    val newFragment =
-                        CustomizationPickerFragment().apply { setInitialSavedState(savedState) }
-                    supportFragmentManager
-                        .beginTransaction()
-                        .add(
-                            R.id.fragment_container,
-                            newFragment,
-                            CUSTOMIZATION_PICKER_FRAGMENT_TAG,
-                        )
-                        .commitNow()
+                // A font from the font picker is an overlay too. Text already on screen keeps
+                // the old font, so recreate the picker when the font families change.
+                val newFontFamilies = getFontFamilies()
+                if (newFontFamilies != fontFamilies) {
+                    fontFamilies = newFontFamilies
+                    recreateCustomizationPickerFragment()
                 }
+            } else if (isScreenSizeChange) {
+                // Recreate the picker so the wallpaper preview and other UI elements
+                // recalculate their dimensions for the new screen size.
+                recreateCustomizationPickerFragment()
             }
         }
         configuration?.setTo(newConfig)
+    }
+
+    private fun recreateCustomizationPickerFragment() {
+        val fragment = supportFragmentManager.findFragmentByTag(CUSTOMIZATION_PICKER_FRAGMENT_TAG)
+        if (fragment is CustomizationPickerFragment && fragment.isAdded) {
+            // Manually trigger CustomizationPickerFragment2 recreation to refresh the UI.
+            // Since this Activity handles configuration changes manually, the Fragment's
+            // view hierarchy isn't automatically destroyed. We must force a remove/add
+            // cycle to trigger onCreateView.
+            val savedState = supportFragmentManager.saveFragmentInstanceState(fragment)
+            supportFragmentManager.beginTransaction().remove(fragment).commitNow()
+            val newFragment =
+                CustomizationPickerFragment().apply { setInitialSavedState(savedState) }
+            supportFragmentManager
+                .beginTransaction()
+                .add(R.id.fragment_container, newFragment, CUSTOMIZATION_PICKER_FRAGMENT_TAG)
+                .commitNow()
+        }
+    }
+
+    /** Returns the framework's headline and body font families, which font overlays change. */
+    @SuppressLint("DiscouragedApi")
+    private fun getFontFamilies(): Pair<String, String> {
+        fun getAndroidString(name: String): String {
+            val id = resources.getIdentifier(name, "string", "android")
+            return if (id != 0) resources.getString(id) else ""
+        }
+        return getAndroidString("config_headlineFontFamily") to
+            getAndroidString("config_bodyFontFamily")
     }
 
     override fun onActivityResult(
